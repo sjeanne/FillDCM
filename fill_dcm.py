@@ -1,17 +1,31 @@
 import argparse
 import pydicom
-from random import randrange
+import string
+from random import randrange, choices
 
 
 def generate_data():
     return {"PatientName": generate_personal_name(),
-            "ReferingPhysician": generate_personal_name(),
-            "PatientBirthDate": generate_date()
+            "ReferringPhysicianName": generate_personal_name(),
+            "PatientBirthDate": generate_date(),
+            "PatientID": generate_id(),
+            "DeviceSerialNumber": generate_id()
             }
+
+
+def generate_id():
+    """ Generate a Patient ID following DICOM LO VR spec
+    https://dicom.nema.org/dicom/2013/output/chtml/part05/sect_6.2.html
+    Patient ID is generated as: XXYYYY where X is a
+    Returns:
+        A Patient ID as a string
+    """
+    return "".join(choices(string.ascii_uppercase + string.digits, k=10))
 
 
 def generate_personal_name():
     """ Generate a personal name and follow DICOM PN VR spec.
+    https://dicom.nema.org/dicom/2013/output/chtml/part05/sect_6.2.html
     Only first and last names are filled.
 
     Returns:
@@ -22,19 +36,38 @@ def generate_personal_name():
 
 def generate_date():
     """ Generate a data and follow DICOM DA VR specs.
+    https://dicom.nema.org/dicom/2013/output/chtml/part05/sect_6.2.html
         Returns:
             A DICOM date
         """
     return "{}{:02}{:02}".format(randrange(1950, 2020), randrange(1, 12), randrange(1, 30))
 
 
+def is_tag_empty_or_missing(tag_name, dataset):
+    """ Check if the tag is missing or has an empty value
+        Parameters:
+            tag_name (string) Tag to find
+            dataset (Dataset) Dataset
+        Returns:
+            True if the tag is missing or empty, otherwise False
+    """
+    if (tag_name in dataset and dataset[tag_name].VM == 0):
+        print("Empty tag:", tag_name, dataset[tag_name])
+    return not (tag_name in dataset) or dataset[tag_name].VM == 0
+
+
 def adjust_dicom_dataset(dataset, replacement_data):
-    if not ('PatientName' in dataset):
+    # TODO more generic code
+    if is_tag_empty_or_missing('PatientName', dataset):
         dataset.PatientName = replacement_data["PatientName"]
-    if not ('ReferingPhysician' in dataset):
-        dataset.ReferingPhysician = replacement_data["ReferingPhysician"]
-    if not ('PatientBirthDate' in dataset):
+    if is_tag_empty_or_missing('ReferringPhysicianName', dataset):
+        dataset.ReferringPhysicianName = replacement_data["ReferringPhysicianName"]
+    if is_tag_empty_or_missing('PatientBirthDate', dataset):
         dataset.PatientBirthDate = replacement_data["PatientBirthDate"]
+    if is_tag_empty_or_missing('PatientID', dataset):
+        dataset.PatientID = replacement_data["PatientID"]
+    if is_tag_empty_or_missing('DeviceSerialNumber', dataset):
+        dataset.DeviceSerialNumber = replacement_data["DeviceSerialNumber"]
 
 
 def adjust_dicom_files(files, input_values):
@@ -43,8 +76,7 @@ def adjust_dicom_files(files, input_values):
     Args:
         files ([str]): list of path to DICOM files
         input_values (obj): Values to set into DICOM files
-    Raises:
-
+Raises:
     """
 
     replacement_data = generate_data()
@@ -67,9 +99,9 @@ def fill_dcm_executable():
         '-p', '--patient-name', help='Patient name to set. Shall follow PN VR from the DICOM standard.')
     # TODO Add Patient's birthdate
     # TODO Add Patient's ID
-    # TODO Add Refering Physician
+    # TODO Add Referring Physician
     # TODO Add Device serial number
-    # TODO Add option to not over write input files, shall be default behaviour
+    # TODO Add option to not over write input files, shall be default behavior
 
     input_args = command_line.parse_args()
     adjust_dicom_files(files=input_args.files, input_values={
