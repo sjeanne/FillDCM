@@ -1,5 +1,5 @@
 import unittest
-from fill_dcm import generate_personal_name, generate_date, generate_id, generate_data
+from fill_dcm import generate_personal_name, generate_date, generate_id, generate_data, Gender
 
 
 class TestGenerates(unittest.TestCase):

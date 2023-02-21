@@ -2,10 +2,184 @@ import argparse
 import pydicom
 import string
 from random import randrange, choices
+from enum import Enum, auto
+from pathlib import Path
 
 
-def generate_data():
-    return {"PatientName": generate_personal_name(),
+class Gender(Enum):
+    MALE = auto()
+    FEMALE = auto()
+    NOT_SPECIFIED = auto()
+
+
+PERSONAL_NAME_SAMPLE = {
+    "first_names_male": ["James",
+                         "Robert",
+                         "John",
+                         "Michael",
+                         "David",
+                         "William",
+                         "Richard",
+                         "Joseph",
+                         "Thomas",
+                         "Charles",
+                         "Christopher",
+                         "Daniel",
+                         "Matthew",
+                         "Anthony",
+                         "Mark",
+                         "Donald",
+                         "Steven",
+                         "Paul",
+                         "Andrew",
+                         "Joshua",
+                         "Kenneth",
+                         "Kevin",
+                         "Brian",
+                         "George",
+                         "Timothy",
+                         "Ronald",
+                         "Edward",
+                         "Jason",
+                         "Jeffrey",
+                         "Ryan",
+                         "Jacob",
+                         "Gary",
+                         "Nicholas",
+                         "Eric",
+                         "Jonathan",
+                         "Stephen",
+                         "Larry",
+                         "Justin",
+                         "Scott",
+                         "Brandon",
+                         "Benjamin",
+                         "Samuel",
+                         "Gregory",
+                         "Alexander",
+                         "Frank",
+                         "Patrick",
+                         "Raymond",
+                         "Jack",
+                         "Dennis",
+                         "Jerry",
+                         "Tyler",
+                         "Aaron",
+                         "Jose",
+                         "Adam",
+                         "Nathan",
+                         "Henry"],
+    "first_names_female": ["Mary",
+                           "Patricia",
+                           "Jennifer",
+                           "Linda",
+                           "Elizabeth",
+                           "Barbara",
+                           "Susan",
+                           "Jessica",
+                           "Sarah",
+                           "Karen",
+                           "Lisa",
+                           "Nancy",
+                           "Betty",
+                           "Margaret",
+                           "Sandra",
+                           "Ashley",
+                           "Kimberly",
+                           "Emily",
+                           "Donna",
+                           "Michelle",
+                           "Carol",
+                           "Amanda",
+                           "Dorothy",
+                           "Melissa",
+                           "Deborah",
+                           "Stephanie",
+                           "Rebecca",
+                           "Sharon",
+                           "Laura",
+                           "Cynthia",
+                           "Kathleen",
+                           "Amy",
+                           "Angela",
+                           "Shirley",
+                           "Anna",
+                           "Brenda",
+                           "Pamela",
+                           "Emma",
+                           "Nicole",
+                           "Helen",
+                           "Samantha",
+                           "Katherine",
+                           "Christine",
+                           "Debra",
+                           "Rachel",
+                           "Carolyn",
+                           "Janet",
+                           "Catherine",
+                           "Maria",
+                           "Heather",
+                           "Diane",
+                           "Ruth",
+                           "Julie",
+                           "Olivia",
+                           "Joyce",
+                           "Virginia"],
+    "last_names": ["Smith",
+                   "Johnson",
+                   "Williams",
+                   "Brown",
+                   "Jones",
+                   "Garcia",
+                   "Miller",
+                   "Davis",
+                   "Rodriguez",
+                   "Martinez",
+                   "Hernandez",
+                   "Lopez",
+                   "Gonzalez",
+                   "Wilson",
+                   "Anderson",
+                   "Thomas",
+                   "Taylor",
+                   "Moore",
+                   "Jackson",
+                   "Martin",
+                   "Lee",
+                   "Perez",
+                   "Thompson",
+                   "White",
+                   "Harris",
+                   "Sanchez",
+                   "Clark",
+                   "Ramirez",
+                   "Lewis",
+                   "Robinson",
+                   "Walker",
+                   "Young",
+                   "Allen",
+                   "King",
+                   "Wright",
+                   "Scott",
+                   "Torres",
+                   "Nguyen",
+                   "Hill",
+                   "Flores",
+                   "Green",
+                   "Adams",
+                   "Nelson",
+                   "Baker",
+                   "Hall",
+                   "Rivera",
+                   "Campbell",
+                   "Mitchell",
+                   "Carter",
+                   "Roberts"]
+}
+
+
+def generate_data(patient_gender=Gender.NOT_SPECIFIED):
+    return {"PatientName": generate_personal_name(patient_gender),
             "ReferringPhysicianName": generate_personal_name(),
             "PatientBirthDate": generate_date(),
             "PatientID": generate_id(),
@@ -23,7 +197,7 @@ def generate_id():
     return "".join(choices(string.ascii_uppercase + string.digits, k=10))
 
 
-def generate_personal_name():
+def generate_personal_name(gender=Gender.NOT_SPECIFIED):
     """ Generate a personal name and follow DICOM PN VR spec.
     https://dicom.nema.org/dicom/2013/output/chtml/part05/sect_6.2.html
     Only first and last names are filled.
@@ -31,7 +205,15 @@ def generate_personal_name():
     Returns:
         A DICOM personal name
     """
-    return "Last^First"
+    possible_first_names = []
+    if gender == Gender.FEMALE:
+        possible_first_names = PERSONAL_NAME_SAMPLE["first_names_female"]
+    elif gender == Gender.MALE:
+        possible_first_names = PERSONAL_NAME_SAMPLE["first_names_male"]
+    else:
+        possible_first_names.extend(PERSONAL_NAME_SAMPLE["first_names_female"])
+        possible_first_names.extend(PERSONAL_NAME_SAMPLE["first_names_male"])
+    return "{}^{}".format(choices(PERSONAL_NAME_SAMPLE["last_names"]), choices(possible_first_names))
 
 
 def generate_date():
@@ -51,8 +233,6 @@ def is_tag_empty_or_missing(tag_name, dataset):
         Returns:
             True if the tag is missing or empty, otherwise False
     """
-    if (tag_name in dataset and dataset[tag_name].VM == 0):
-        print("Empty tag:", tag_name, dataset[tag_name])
     return not (tag_name in dataset) or dataset[tag_name].VM == 0
 
 
@@ -76,15 +256,23 @@ def adjust_dicom_files(files, input_values):
     Args:
         files ([str]): list of path to DICOM files
         input_values (obj): Values to set into DICOM files
-Raises:
     """
+    if len(files) == 0:
+        # TODO better error management
+        return
 
-    replacement_data = generate_data()
+    patient_sex_dataset = pydicom.dcmread(
+        files[0], specific_tags=['PatientSex'])
+    patient_gender = Gender.MALE if patient_sex_dataset.PatientSex == 'M' else Gender.FEMALE
+
+    replacement_data = generate_data(patient_gender)
+
     for file in files:
         print("Work on file: {}".format(file))
         dataset = pydicom.dcmread(file)
         adjust_dicom_dataset(dataset, replacement_data)
-        dataset.save_as("new_file.dcm")
+        dataset.save_as("{}/{}_modified{}".format(
+            Path(file).parent, Path(file).stem, Path(file).suffix))
 
 
 def fill_dcm_executable():
@@ -102,6 +290,8 @@ def fill_dcm_executable():
     # TODO Add Referring Physician
     # TODO Add Device serial number
     # TODO Add option to not over write input files, shall be default behavior
+    # command_line.add_argument(
+    #     '-ro', '--rename-output', help='Rename output file by adding "_modified" to filenames')
 
     input_args = command_line.parse_args()
     adjust_dicom_files(files=input_args.files, input_values={
