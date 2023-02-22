@@ -250,12 +250,27 @@ def adjust_dicom_dataset(dataset, replacement_data):
         dataset.DeviceSerialNumber = replacement_data["DeviceSerialNumber"]
 
 
-def adjust_dicom_files(files, input_values):
+def output_filepath(original_file_path, overwrite_option):
+    """ Generate the output filepath. If no overwrite, '_modified' is appended to the input. Otherwise, the input is returned
+    Args:
+        original_file_path (string) Path to the input file
+        overwrite_option (boolean) True to overwrite the input file
+    """
+    output_filepath = original_file_path
+    if not overwrite_option:
+        path_to_file = Path(original_file_path)
+        output_filepath = "{}/{}_modified{}".format(
+            path_to_file.parent, path_to_file.stem, path_to_file.suffix)
+    return output_filepath
+
+
+def adjust_dicom_files(files, input_values, options):
     """ Adjust DICOM files according to rules and values passed as input
 
     Args:
         files ([str]): list of path to DICOM files
         input_values (obj): Values to set into DICOM files
+        options (obj): Options passed to configure behaviors
     """
     if len(files) == 0:
         # TODO better error management
@@ -271,13 +286,13 @@ def adjust_dicom_files(files, input_values):
         print("Work on file: {}".format(file))
         dataset = pydicom.dcmread(file)
         adjust_dicom_dataset(dataset, replacement_data)
-        dataset.save_as("{}/{}_modified{}".format(
-            Path(file).parent, Path(file).stem, Path(file).suffix))
+
+        dataset.save_as(output_filepath(file, options["overwrite_inputs"]))
 
 
 def fill_dcm_executable():
     command_line = argparse.ArgumentParser(
-        prog="DCMAdjust",
+        prog="FillDCM",
         description="",
         # exit_on_error=False
     )
@@ -289,13 +304,14 @@ def fill_dcm_executable():
     # TODO Add Patient's ID
     # TODO Add Referring Physician
     # TODO Add Device serial number
-    # TODO Add option to not over write input files, shall be default behavior
-    # command_line.add_argument(
-    #     '-ro', '--rename-output', help='Rename output file by adding "_modified" to filenames')
+    command_line.add_argument(
+        '-ov', '--overwrite',
+        action='store_true',
+        help='Overwrite the original file. By default "_generated" is append the the original filename and a new file is created.')
 
     input_args = command_line.parse_args()
     adjust_dicom_files(files=input_args.files, input_values={
-                       "patient_name": input_args.patient_name})
+                       "patient_name": input_args.patient_name}, options={"overwrite_inputs": input_args.overwrite})
 
 
 if __name__ == '__main__':
