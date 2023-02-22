@@ -213,7 +213,7 @@ def generate_personal_name(gender=Gender.NOT_SPECIFIED):
     else:
         possible_first_names.extend(PERSONAL_NAME_SAMPLE["first_names_female"])
         possible_first_names.extend(PERSONAL_NAME_SAMPLE["first_names_male"])
-    return "{}^{}".format(choices(PERSONAL_NAME_SAMPLE["last_names"]), choices(possible_first_names))
+    return "{}^{}".format(choices(PERSONAL_NAME_SAMPLE["last_names"])[0], choices(possible_first_names)[0])
 
 
 def generate_date():
