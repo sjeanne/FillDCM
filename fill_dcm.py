@@ -178,12 +178,18 @@ PERSONAL_NAME_SAMPLE = {
 }
 
 
-def generate_data(patient_gender=Gender.NOT_SPECIFIED):
-    return {"PatientName": generate_personal_name(patient_gender),
-            "ReferringPhysicianName": generate_personal_name(),
-            "PatientBirthDate": generate_date(),
-            "PatientID": generate_id(),
-            "DeviceSerialNumber": generate_id()
+def generate_data(input_values={}, patient_gender=Gender.NOT_SPECIFIED):
+    """ Generate a structure filled with data used to fill missing/incomplete tags.
+        Data can either be generated or specified by the caller
+        Parameters:
+            input_values (obj) Values defined by the caller
+            patient_gender (Gender) Used to generate PatientName
+    """
+    return {"PatientName": input_values["patient_name"] if ("patient_name" in input_values) else generate_personal_name(patient_gender),
+            "ReferringPhysicianName": input_values["referring_physician_name"] if ("referring_physician_name" in input_values) else generate_personal_name(),
+            "PatientBirthDate": input_values["patient_birthdate"] if "patient_birthdate" in input_values else generate_date(),
+            "PatientID": input_values["patient_id"] if "patient_id" in input_values else generate_id(),
+            "DeviceSerialNumber": input_values["device_serial_number"] if "device_serial_number" in input_values else generate_id()
             }
 
 
@@ -280,9 +286,10 @@ def adjust_dicom_files(files, input_values, options):
         files[0], specific_tags=['PatientSex'])
     patient_gender = Gender.MALE if patient_sex_dataset.PatientSex == 'M' else Gender.FEMALE
 
-    replacement_data = generate_data(patient_gender)
+    replacement_data = generate_data(input_values, patient_gender)
 
     for file in files:
+        # TODO better handle errors: if file doesn't exist
         print("Work on file: {}".format(file))
         dataset = pydicom.dcmread(file)
         adjust_dicom_dataset(dataset, replacement_data)
@@ -299,11 +306,15 @@ def fill_dcm_executable():
     command_line.add_argument(
         'files', metavar='dcm_file', nargs='+', help="DICOM files to edit")
     command_line.add_argument(
-        '-p', '--patient-name', help='Patient name to set. Shall follow PN VR from the DICOM standard.')
-    # TODO Add Patient's birthdate
-    # TODO Add Patient's ID
-    # TODO Add Referring Physician
-    # TODO Add Device serial number
+        '-pn', '--patient-name', help='Patient name to set. Shall follow PN VR from the DICOM standard.')
+    command_line.add_argument(
+        '-pbd', '--patient-birthdate', help='Patient birthdate to set. Shall follow DA VR from the DICOM standard.')
+    command_line.add_argument(
+        '-pid', '--patient-id', help='Patient ID to set. Shall follow LO VR from the DICOM standard.')
+    command_line.add_argument(
+        '-rfn', '--referring-physician-name', help='Referring Physician name to set. Shall follow PN VR from the DICOM standard.')
+    command_line.add_argument(
+        '-dsn', '--device-serial-number', help='Device Serial Number to set. Shall follow LO VR from the DICOM standard.')
     command_line.add_argument(
         '-ov', '--overwrite',
         action='store_true',
