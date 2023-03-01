@@ -277,23 +277,27 @@ def adjust_dicom_files(files, input_values, options):
         files ([str]): list of path to DICOM files
         input_values (obj): Values to set into DICOM files
         options (obj): Options passed to configure behaviors
-    """
-    if len(files) == 0:
-        # TODO better error management
-        return
+    Exceptions:
 
-    patient_sex_dataset = pydicom.dcmread(
-        files[0], specific_tags=['PatientSex'])
-    patient_gender = Gender.MALE if patient_sex_dataset.PatientSex == 'M' else Gender.FEMALE
+    """
+    try:
+        patient_sex_dataset = pydicom.dcmread(
+            files[0], specific_tags=['PatientSex'])
+        patient_gender = Gender.MALE if patient_sex_dataset.PatientSex == 'M' else Gender.FEMALE
+    except:
+        print("Invalid file to read: {}".format(files[0]))
+        return
 
     replacement_data = generate_data(input_values, patient_gender)
 
     for file in files:
-        # TODO better handle errors: if file doesn't exist
         print("Work on file: {}".format(file))
-        dataset = pydicom.dcmread(file)
-        adjust_dicom_dataset(dataset, replacement_data)
+        try:
+            dataset = pydicom.dcmread(file)
+        except:
+            print("Invalid file to read: {}".format(file))
 
+        adjust_dicom_dataset(dataset, replacement_data)
         dataset.save_as(output_filepath(file, options["overwrite_inputs"]))
 
 
@@ -301,7 +305,6 @@ def fill_dcm_executable():
     command_line = argparse.ArgumentParser(
         prog="FillDCM",
         description="",
-        # exit_on_error=False
     )
     command_line.add_argument(
         'files', metavar='dcm_file', nargs='+', help="DICOM files to edit")
