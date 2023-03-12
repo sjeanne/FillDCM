@@ -24,25 +24,25 @@ class TestGenerates(unittest.TestCase):
         """ Call to generate_data() with input values. Generated data shall match input values
         """
         input_values = {
-            "patient_name": "patient^name^complicated",
-            "patient_id": "1234567890AZERTY",
-            "patient_birthdate": "20000101",
-            "referring_physician_name": "Dr^Ref^Phy",
-            "device_serial_number": "AT40",
+            "PatientName": "patient^name^complicated",
+            "PatientID": "1234567890AZERTY",
+            "PatientBirthDate": "20000101",
+            "ReferringPhysicianName": "Dr^Ref^Phy",
+            "DeviceSerialNumber": "AT40",
         }
 
         generated_data = generate_data(input_values)
 
         self.assertEqual(
-            generated_data["PatientName"], input_values["patient_name"])
+            generated_data["PatientName"], input_values["PatientName"])
         self.assertEqual(
-            generated_data["PatientID"], input_values["patient_id"])
+            generated_data["PatientID"], input_values["PatientID"])
         self.assertEqual(
-            generated_data["PatientBirthDate"], input_values["patient_birthdate"])
+            generated_data["PatientBirthDate"], input_values["PatientBirthDate"])
         self.assertEqual(
-            generated_data["ReferringPhysicianName"], input_values["referring_physician_name"])
+            generated_data["ReferringPhysicianName"], input_values["ReferringPhysicianName"])
         self.assertEqual(
-            generated_data["DeviceSerialNumber"], input_values["device_serial_number"])
+            generated_data["DeviceSerialNumber"], input_values["DeviceSerialNumber"])
 
     def test_generate_personal_name(self):
         pn = generate_personal_name()

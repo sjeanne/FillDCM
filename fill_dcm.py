@@ -185,11 +185,11 @@ def generate_data(input_values={}, patient_gender=Gender.NOT_SPECIFIED):
             input_values (obj) Values defined by the caller
             patient_gender (Gender) Used to generate PatientName
     """
-    return {"PatientName": input_values["patient_name"] if ("patient_name" in input_values) else generate_personal_name(patient_gender),
-            "ReferringPhysicianName": input_values["referring_physician_name"] if ("referring_physician_name" in input_values) else generate_personal_name(),
-            "PatientBirthDate": input_values["patient_birthdate"] if "patient_birthdate" in input_values else generate_date(),
-            "PatientID": input_values["patient_id"] if "patient_id" in input_values else generate_id(),
-            "DeviceSerialNumber": input_values["device_serial_number"] if "device_serial_number" in input_values else generate_id()
+    return {"PatientName": input_values["PatientName"] if ("PatientName" in input_values) else generate_personal_name(patient_gender),
+            "PatientBirthDate": input_values["PatientBirthDate"] if "PatientBirthDate" in input_values else generate_date(),
+            "PatientID": input_values["PatientID"] if "PatientID" in input_values else generate_id(),
+            "ReferringPhysicianName": input_values["ReferringPhysicianName"] if ("ReferringPhysicianName" in input_values) else generate_personal_name(),
+            "DeviceSerialNumber": input_values["DeviceSerialNumber"] if "DeviceSerialNumber" in input_values else generate_id()
             }
 
 
@@ -231,29 +231,18 @@ def generate_date():
     return "{}{:02}{:02}".format(randrange(1950, 2020), randrange(1, 12), randrange(1, 30))
 
 
-def is_tag_empty_or_missing(tag_name, dataset):
-    """ Check if the tag is missing or has an empty value
-        Parameters:
-            tag_name (string) Tag to find
-            dataset (Dataset) Dataset
-        Returns:
-            True if the tag is missing or empty, otherwise False
-    """
-    return not (tag_name in dataset) or dataset[tag_name].VM == 0
-
-
 def adjust_dicom_dataset(dataset, replacement_data):
-    # TODO more generic code
-    if is_tag_empty_or_missing('PatientName', dataset):
-        dataset.PatientName = replacement_data["PatientName"]
-    if is_tag_empty_or_missing('ReferringPhysicianName', dataset):
-        dataset.ReferringPhysicianName = replacement_data["ReferringPhysicianName"]
-    if is_tag_empty_or_missing('PatientBirthDate', dataset):
-        dataset.PatientBirthDate = replacement_data["PatientBirthDate"]
-    if is_tag_empty_or_missing('PatientID', dataset):
-        dataset.PatientID = replacement_data["PatientID"]
-    if is_tag_empty_or_missing('DeviceSerialNumber', dataset):
-        dataset.DeviceSerialNumber = replacement_data["DeviceSerialNumber"]
+    """ Replace in the dataset empty or missing tags by replacement data
+        Parameters:
+            dataset (Dataset) Dataset to adjust
+            replacement_data (object) Data used to replace missing/empty tags
+    """
+    for dcm_tag in replacement_data:
+        if not (dcm_tag in dataset):
+            dataset.add_new(dcm_tag, pydicom.datadict.dictionary_VR(
+                dcm_tag), replacement_data[dcm_tag])
+        elif dataset[dcm_tag].VM == 0:
+            dataset[dcm_tag].value = replacement_data[dcm_tag]
 
 
 def output_filepath(original_file_path, overwrite_option):
@@ -324,8 +313,15 @@ def fill_dcm_executable():
         help='Overwrite the original file. By default "_generated" is append the the original filename and a new file is created.')
 
     input_args = command_line.parse_args()
-    adjust_dicom_files(files=input_args.files, input_values={
-                       "patient_name": input_args.patient_name}, options={"overwrite_inputs": input_args.overwrite})
+    adjust_dicom_files(files=input_args.files,
+                       input_values={
+                           "PatientName": input_args.patient_name,
+                           "PatientBirthData": input_args.patient_birthdate,
+                           "PatientID": input_args.patient_id,
+                           "ReferringPhysicianName": input_args.referring_physician_name,
+                           "DeviceSerialNumber": input_args.device_serial_number
+                       },
+                       options={"overwrite_inputs": input_args.overwrite})
 
 
 if __name__ == '__main__':
