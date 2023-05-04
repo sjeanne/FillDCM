@@ -185,11 +185,11 @@ def generate_data(input_values={}, patient_gender=Gender.NOT_SPECIFIED):
             input_values (obj) Values defined by the caller
             patient_gender (Gender) Used to generate PatientName
     """
-    return {"PatientName": input_values["PatientName"] if ("PatientName" in input_values) else generate_personal_name(patient_gender),
-            "PatientBirthDate": input_values["PatientBirthDate"] if "PatientBirthDate" in input_values else generate_date(),
-            "PatientID": input_values["PatientID"] if "PatientID" in input_values else generate_id(),
-            "ReferringPhysicianName": input_values["ReferringPhysicianName"] if ("ReferringPhysicianName" in input_values) else generate_personal_name(),
-            "DeviceSerialNumber": input_values["DeviceSerialNumber"] if "DeviceSerialNumber" in input_values else generate_id()
+    return {"PatientName": input_values["PatientName"] if ("PatientName" in input_values and input_values["PatientName"]) else generate_personal_name(patient_gender),
+            "PatientBirthDate": input_values["PatientBirthDate"] if ("PatientBirthDate" in input_values and input_values["PatientBirthDate"]) else generate_date(),
+            "PatientID": input_values["PatientID"] if ("PatientID" in input_values and input_values["PatientID"]) else generate_id(),
+            "ReferringPhysicianName": input_values["ReferringPhysicianName"] if ("ReferringPhysicianName" in input_values and input_values["ReferringPhysicianName"]) else generate_personal_name(),
+            "DeviceSerialNumber": input_values["DeviceSerialNumber"] if ("DeviceSerialNumber" in input_values and input_values["DeviceSerialNumber"]) else generate_id()
             }
 
 
