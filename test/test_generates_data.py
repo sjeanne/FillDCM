@@ -10,15 +10,27 @@ class TestGenerates(unittest.TestCase):
         self.assertTrue('PatientName' in generated_data)
         self.assertTrue('ReferringPhysicianName' in generated_data)
         self.assertTrue('PatientBirthDate' in generated_data)
+        self.assertTrue('PatientSex' in generated_data)
         self.assertTrue('PatientID' in generated_data)
         self.assertTrue('DeviceSerialNumber' in generated_data)
 
-    def test_generate_data_genders(self):
-        """  Call generate_data() with different gender values
+    def test_generate_data_valid_genders(self):
+        """  Call generate_data() with different valid gender values
         """
         for gender_value in Gender:
-            generated_data = generate_data(patient_gender=gender_value)
+            generated_data = generate_data(
+                patient_sex_from_dcm=gender_value.value)
             self.assertTrue('PatientName' in generated_data)
+            self.assertEqual(generated_data["PatientSex"], gender_value.value)
+
+    def test_generate_data_invalid_genders(self):
+        """ Call generate_data() with invalid gender values
+        """
+        for invalid_gender in ["", "Invalid", "MALE", "Cat"]:
+            generated_data = generate_data(patient_sex_from_dcm=invalid_gender)
+            self.assertTrue('PatientName' in generated_data)
+            self.assertEqual(
+                generated_data["PatientSex"], Gender.NOT_SPECIFIED.value)
 
     def test_generate_data_values(self):
         """ Call to generate_data() with input values. Generated data shall match input values
@@ -27,6 +39,7 @@ class TestGenerates(unittest.TestCase):
             "PatientName": "patient^name^complicated",
             "PatientID": "1234567890AZERTY",
             "PatientBirthDate": "20000101",
+            "PatientSex": "F",
             "ReferringPhysicianName": "Dr^Ref^Phy",
             "DeviceSerialNumber": "AT40",
         }

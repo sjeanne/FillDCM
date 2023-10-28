@@ -2,14 +2,14 @@ import argparse
 import pydicom
 import string
 from random import randrange, choices
-from enum import Enum, auto
+from enum import Enum
 from pathlib import Path
 
 
-class Gender(Enum):
-    MALE = auto()
-    FEMALE = auto()
-    NOT_SPECIFIED = auto()
+class Gender(str, Enum):
+    MALE = 'M'
+    FEMALE = 'F'
+    NOT_SPECIFIED = 'O'
 
 
 PERSONAL_NAME_SAMPLE = {
@@ -178,16 +178,36 @@ PERSONAL_NAME_SAMPLE = {
 }
 
 
-def generate_data(input_values={}, patient_gender=Gender.NOT_SPECIFIED):
+def dicom_sex_to_gender(dcm_sex: str = ''):
+    """ Convert DICOM CS Sex values to Gender enum
+    """
+    match dcm_sex:
+        case 'M':
+            return Gender.MALE
+        case 'F':
+            return Gender.FEMALE
+        case _:
+            return Gender.NOT_SPECIFIED
+
+
+def generate_data(input_values={}, patient_sex_from_dcm: str = ''):
     """ Generate a structure filled with data used to fill missing/incomplete tags.
         Data can either be generated or specified by the caller
         Parameters:
             input_values (obj) Values defined by the caller
-            patient_gender (Gender) Used to generate PatientName
+            patient_gender (str) PatientSex tag from the input DICOM file
     """
+    # Manage Patient's sex first as it may be used to generate other data
+    if patient_sex_from_dcm in ['M', 'F', 'O']:
+        patient_gender = dicom_sex_to_gender(patient_sex_from_dcm)
+    else:
+        patient_gender = dicom_sex_to_gender(
+            input_values["PatientSex"]) if "PatientSex" in input_values else Gender.NOT_SPECIFIED
+
     return {"PatientName": input_values["PatientName"] if ("PatientName" in input_values and input_values["PatientName"]) else generate_personal_name(patient_gender),
             "PatientBirthDate": input_values["PatientBirthDate"] if ("PatientBirthDate" in input_values and input_values["PatientBirthDate"]) else generate_date(),
             "PatientID": input_values["PatientID"] if ("PatientID" in input_values and input_values["PatientID"]) else generate_id(),
+            "PatientSex": patient_gender.value,
             "ReferringPhysicianName": input_values["ReferringPhysicianName"] if ("ReferringPhysicianName" in input_values and input_values["ReferringPhysicianName"]) else generate_personal_name(),
             "DeviceSerialNumber": input_values["DeviceSerialNumber"] if ("DeviceSerialNumber" in input_values and input_values["DeviceSerialNumber"]) else generate_id()
             }
@@ -238,6 +258,7 @@ def adjust_dicom_dataset(dataset, replacement_data):
             replacement_data (object) Data used to replace missing/empty tags
     """
     for dcm_tag in replacement_data:
+
         if not (dcm_tag in dataset):
             dataset.add_new(dcm_tag, pydicom.datadict.dictionary_VR(
                 dcm_tag), replacement_data[dcm_tag])
@@ -270,14 +291,13 @@ def adjust_dicom_files(files, input_values, options):
 
     """
     try:
-        patient_sex_dataset = pydicom.dcmread(
-            files[0], specific_tags=['PatientSex'])
-        patient_gender = Gender.MALE if patient_sex_dataset.PatientSex == 'M' else Gender.FEMALE
+        patient_sex_from_dcm = pydicom.dcmread(
+            files[0], specific_tags=['PatientSex']).PatientSex
     except:
         print("Invalid file to read: {}".format(files[0]))
         return
 
-    replacement_data = generate_data(input_values, patient_gender)
+    replacement_data = generate_data(input_values, patient_sex_from_dcm)
 
     for file in files:
         print("Work on file: {}".format(file))
@@ -285,6 +305,7 @@ def adjust_dicom_files(files, input_values, options):
             dataset = pydicom.dcmread(file)
         except:
             print("Invalid file to read: {}".format(file))
+            continue
 
         adjust_dicom_dataset(dataset, replacement_data)
         dataset.save_as(output_filepath(file, options["overwrite_inputs"]))
@@ -293,7 +314,7 @@ def adjust_dicom_files(files, input_values, options):
 def fill_dcm_executable():
     command_line = argparse.ArgumentParser(
         prog="FillDCM",
-        description="",
+        description="Do stuff",
     )
     command_line.add_argument(
         'files', metavar='dcm_file', nargs='+', help="DICOM files to edit")
@@ -303,6 +324,8 @@ def fill_dcm_executable():
         '-pbd', '--patient-birthdate', help='Patient birthdate to set. Shall follow DA VR from the DICOM standard.')
     command_line.add_argument(
         '-pid', '--patient-id', help='Patient ID to set. Shall follow LO VR from the DICOM standard.')
+    command_line.add_argument(
+        '-ps', '--patient-sex', help='PatientSex to set. Shall follow CS VR from the DICOM standard')
     command_line.add_argument(
         '-rfn', '--referring-physician-name', help='Referring Physician name to set. Shall follow PN VR from the DICOM standard.')
     command_line.add_argument(
@@ -318,6 +341,7 @@ def fill_dcm_executable():
                            "PatientName": input_args.patient_name,
                            "PatientBirthData": input_args.patient_birthdate,
                            "PatientID": input_args.patient_id,
+                           "PatientSex": input_args.patient_sex,
                            "ReferringPhysicianName": input_args.referring_physician_name,
                            "DeviceSerialNumber": input_args.device_serial_number
                        },

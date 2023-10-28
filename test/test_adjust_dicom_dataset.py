@@ -2,7 +2,7 @@ import unittest
 from pydicom import Dataset
 from fill_dcm import adjust_dicom_dataset, generate_data
 
-MANAGED_TAGS = ["PatientName", "PatientID", "PatientBirthDate",
+MANAGED_TAGS = ["PatientName", "PatientID", "PatientBirthDate", "PatientSex",
                 "ReferringPhysicianName", "DeviceSerialNumber"]
 
 
@@ -62,6 +62,20 @@ class TestAdjustDICOMDataset(unittest.TestCase):
         self.assertTrue('PatientID' in ds)
         self.assertEqual(ds.PatientID, replacement_data["PatientID"])
 
+    def test_missing_patient_sex(self):
+        """ Input dataset has no PatientSex. Adjusted dataset shall have the replacement PatientSex
+        """
+        ds = self.load_json_dataset("test/data/dcm_dataset_no_sex.json")
+
+        replacement_data = generate_data()
+
+        self.assertFalse('PatientSex' in ds)
+        adjust_dicom_dataset(
+            ds, replacement_data)
+
+        self.assertTrue('PatientSex' in ds)
+        self.assertEqual(ds.PatientSex, replacement_data["PatientSex"])
+
     def test_missing_referring_physician(self):
         """ use an empty Dataset without Referring Physician. Adjusted dataset shall have the replacement Referring Physician
         """
@@ -105,6 +119,8 @@ class TestAdjustDICOMDataset(unittest.TestCase):
             self.assertEqual(ds[dcm_tag].value, replacement_data[dcm_tag])
 
     def test_all_fields_missing(self):
+        """ Input dataset contains none of the required  tags. All tags shall be filled with a value.
+        """
         ds = Dataset()
 
         for dcm_tag in MANAGED_TAGS:

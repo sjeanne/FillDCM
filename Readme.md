@@ -6,4 +6,5 @@ The DICOM standard already defines header tags with their VM and VR. But some pr
 -   0010,0010 - Patient name (PN): not null and not empty
 -   0010,0020 - Patient's ID: not null and not empty
 -   0010,0030 - Patient's birth date: not null and not empty
+-   0010,0040 - Patient's sex: not null and not empty
 -   0018,1000 - Device Serial Number

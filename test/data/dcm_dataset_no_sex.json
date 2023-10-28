@@ -13,14 +13,15 @@
         "vr": "UI"
     },
     "00080090": {
+        "Value": [{ "Alphabetic": "Referring^Phy" }],
         "vr": "PN"
     },
     "00100010": {
+        "Value": [{ "Alphabetic": "LastName^FirstName" }],
         "vr": "PN"
     },
-    "00100020": { "Value": [""], "vr": "LO" },
-    "00100030": { "Value": [""], "vr": "DA" },
-    "00100040": { "Value": [""], "vr": "CS" },
+    "00100020": { "Value": ["7"], "vr": "LO" },
+    "00100030": { "Value": ["19010101"], "vr": "DA" },
     "00101030": { "Value": [90.0], "vr": "DS" },
-    "00181000": { "Value": [""], "vr": "LO" }
+    "00181000": { "Value": ["00000"], "vr": "LO" }
 }
