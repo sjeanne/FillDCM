@@ -1,6 +1,7 @@
 import unittest
 from pydicom import Dataset
 from fill_dcm import adjust_dicom_dataset, generate_data
+from json import loads
 
 MANAGED_TAGS = ["PatientName", "PatientID", "PatientBirthDate", "PatientSex",
                 "ReferringPhysicianName", "DeviceSerialNumber"]
@@ -8,25 +9,19 @@ MANAGED_TAGS = ["PatientName", "PatientID", "PatientBirthDate", "PatientSex",
 
 class TestAdjustDICOMDataset(unittest.TestCase):
 
-    # TODO Why do we load a json file ? Can't we create a dataset in each test case ?
-    def load_json_dataset(self, file_path):
-        """ Helper function to load a Dataset from a JSON file
+    def load_dataset(self, json_dataset, tags_to_remove):
+        json_ds = loads(json_dataset)
+        for tag in tags_to_remove:
+            if tag in json_ds:
+                del json_ds[tag]
 
-        Parameters:
-            file_path (str) Path to the JSON file to load
-
-        Returns:
-            Loaded Dataset
-        """
         ds = Dataset()
-        with open(file_path, "r") as json_file:
-            json_dataset = json_file.read()
-        return ds.from_json(json_dataset)
+        return ds.from_json(json_ds)
 
     def test_missing_patient_name(self):
         """ Input dataset has no PatientName. Adjusted dataset shall have the replacement PatientName
         """
-        ds = self.load_json_dataset("test/data/dcm_dataset_no_name.json")
+        ds = self.load_dataset(DICOM_DATASET_JSON, ["00100010"])
 
         replacement_data = generate_data()
 
@@ -40,7 +35,7 @@ class TestAdjustDICOMDataset(unittest.TestCase):
     def test_missing_birth_date(self):
         """ Input dataset has no PatientBirthDate. Adjusted dataset shall have the replacement PatientBirthDate
         """
-        ds = self.load_json_dataset("test/data/dcm_dataset_no_birthdate.json")
+        ds = self.load_dataset(DICOM_DATASET_JSON, ["00100030"])
 
         replacement_data = generate_data()
 
@@ -53,7 +48,7 @@ class TestAdjustDICOMDataset(unittest.TestCase):
     def test_missing_patient_id(self):
         """ Input dataset has no Patient ID (0010,0020). Adjusted dataset shall have the replacement Patient ID
         """
-        ds = self.load_json_dataset("test/data/dcm_dataset_no_patient_id.json")
+        ds = self.load_dataset(DICOM_DATASET_JSON, ["00100020"])
 
         replacement_data = generate_data()
 
@@ -65,7 +60,7 @@ class TestAdjustDICOMDataset(unittest.TestCase):
     def test_missing_patient_sex(self):
         """ Input dataset has no PatientSex. Adjusted dataset shall have the replacement PatientSex
         """
-        ds = self.load_json_dataset("test/data/dcm_dataset_no_sex.json")
+        ds = self.load_dataset(DICOM_DATASET_JSON, ["00100040"])
 
         replacement_data = generate_data()
 
@@ -79,8 +74,7 @@ class TestAdjustDICOMDataset(unittest.TestCase):
     def test_missing_referring_physician(self):
         """ use an empty Dataset without Referring Physician. Adjusted dataset shall have the replacement Referring Physician
         """
-        ds = self.load_json_dataset(
-            "test/data/dcm_dataset_no_referring_physician.json")
+        ds = self.load_dataset(DICOM_DATASET_JSON, ["00080090"])
 
         replacement_data = generate_data()
         self.assertFalse('ReferringPhysicianName' in ds)
@@ -92,8 +86,7 @@ class TestAdjustDICOMDataset(unittest.TestCase):
     def test_missing_device_serial_number(self):
         """ use an empty Dataset without Device Serial Number. Adjusted dataset shall have the replacement Device Serial Number
         """
-        ds = self.load_json_dataset(
-            "test/data/dcm_dataset_no_device_serial_number.json")
+        ds = self.load_dataset(DICOM_DATASET_JSON, ["00181000"])
 
         replacement_data = generate_data()
         self.assertFalse('DeviceSerialNumber' in ds)
@@ -105,8 +98,9 @@ class TestAdjustDICOMDataset(unittest.TestCase):
     def test_all_fields_empty(self):
         """ Input dataset contains all required tags but they are empty. All tags shall be adjusted.
         """
-        ds = self.load_json_dataset(
-            "test/data/dcm_dataset_all_empty.json")
+        ds = self.load_dataset(DICOM_DATASET_JSON, [])
+        for dcm_tag in MANAGED_TAGS:
+            ds[dcm_tag].clear()
 
         for dcm_tag in MANAGED_TAGS:
             self.assertEqual(ds[dcm_tag].VM, 0)
@@ -136,8 +130,7 @@ class TestAdjustDICOMDataset(unittest.TestCase):
     def test_dataset_all_defined(self):
         """ Input dataset contains all required tags Patient Name, Patient ID, Patient Birthday, Referring Physician, Device Serial Number. Values shall not be modified.
         """
-        ds = self.load_json_dataset(
-            "test/data/dcm_dataset_all_defined.json")
+        ds = self.load_dataset(DICOM_DATASET_JSON, [])
 
         original_data = {}
 
@@ -150,3 +143,33 @@ class TestAdjustDICOMDataset(unittest.TestCase):
         for dcm_tag in MANAGED_TAGS:
             self.assertTrue(dcm_tag in ds)
             self.assertEqual(ds[dcm_tag].value, original_data[dcm_tag])
+
+
+DICOM_DATASET_JSON = r"""{
+    "00080005": { "Value": ["ISO_IR 100"], "vr": "CS" },
+    "00080008": {
+        "Value": ["ORIGINAL", "PRIMARY", "OTHER", "R", "IR"],
+        "vr": "CS"
+    },
+    "00080012": { "Value": ["19960823"], "vr": "DA" },
+    "00080013": { "Value": ["093801"], "vr": "TM" },
+    "00080014": { "Value": ["1.3.46.670589.11.0.5"], "vr": "UI" },
+    "00080016": { "Value": ["1.2.840.10008.5.1.4.1.1.4"], "vr": "UI" },
+    "00080018": {
+        "Value": ["1.3.46.670589.11.0.4.1996082307380006"],
+        "vr": "UI"
+    },
+    "00080090": {
+        "Value": [{ "Alphabetic": "Referring^Phy" }],
+        "vr": "PN"
+    },
+    "00100010": {
+        "Value": [{ "Alphabetic": "LastName^FirstName" }],
+        "vr": "PN"
+    },
+    "00100020": { "Value": ["7"], "vr": "LO" },
+    "00100030": { "Value": ["19010101"], "vr": "DA" },
+    "00100040": { "Value": ["M"], "vr": "CS" },
+    "00101030": { "Value": [90.0], "vr": "DS" },
+    "00181000": { "Value": ["00000"], "vr": "LO" }
+}"""
