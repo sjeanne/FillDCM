@@ -375,12 +375,13 @@ def output_filepath(original_file_path, overwrite_option=False):
     return output_file_path
 
 
-def adjust_dicom_files(files, input_tags):
+def adjust_dicom_files(files, input_tags, options):
     """ Adjust DICOM files according to rules and values passed as input
 
     Args:
         files ([str]): list of path to DICOM files
         input_tags (obj): Tags to replace/filled in the list of DICOM files
+        options (obj): Options
 
     """
     update_data(input_tags)
@@ -394,9 +395,7 @@ def adjust_dicom_files(files, input_tags):
             continue
 
         adjust_dicom_dataset(dataset, input_tags)
-        # TODO bring back option mechanism to overwrite output file
-        dataset.save_as(output_filepath(file))
-        # , options["overwrite_inputs"]))
+        dataset.save_as(output_filepath(file, options["overwrite"]))
 
 
 def tag_is_in_dicom_dictionary(tag: str) -> bool:
@@ -450,7 +449,7 @@ def verify_input_tags(input_args):
 
 
 def parse_arguments(input_args):
-    """ Parse input arguments and return two dictionaries of tag and tag_to_overwrite
+    """ Parse input arguments and return two dictionaries of tag and tag_to_overwrite and also options
     """
     parsed_tags = dict([("tags", {}), ("tags_to_overwrite", {})])
     # tags
@@ -467,13 +466,17 @@ def parse_arguments(input_args):
             parsed_tags["tags_to_overwrite"][splitted_tag[0]] = None if len(
                 splitted_tag) == 1 else splitted_tag[1]
 
-    return parsed_tags
+    options = dict([("overwrite", input_args.overwrite)])
+
+    return (parsed_tags, options)
 
 
 def fill_dcm_executable():
+    """ Main function that does the job
+    """
     command_line = argparse.ArgumentParser(
         prog="FillDCM",
-        description="Do stuff",
+        description="Tool to fill empty DICOM tags or to overwrite others.",
     )
     command_line.add_argument(
         'files', metavar='dcm_file', nargs='+', help="DICOM files to edit")
@@ -481,15 +484,17 @@ def fill_dcm_executable():
                               help="DICOM tag to fill if value is empty or undefined")
     command_line.add_argument('-to', metavar='--tag-overwrite', action='append',
                               help="DICOM tag to overwrite with the specified value")
-    # TODO: add output options
+    command_line.add_argument(
+        '-ov', '--overwrite',
+        action='store_true',
+        help='Overwrite the original file. By default "_generated" is appended the the original filename and a new file is created.')
 
     input_args = command_line.parse_args()
-    print(input_args)
-    input_tags = parse_arguments(input_args)
-    print(input_tags)
+
+    input_tags, options = parse_arguments(input_args)
     verify_input_tags(input_tags)
 
-    adjust_dicom_files(input_args.files, input_tags)
+    adjust_dicom_files(input_args.files, input_tags, options)
 
 
 if __name__ == '__main__':

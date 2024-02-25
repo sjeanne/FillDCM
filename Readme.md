@@ -1,10 +1,21 @@
 # Introduction
 
-The DICOM standard already defines header tags with their VM and VR. But some projects may need additional and stricter rules. DCMAdjust's goal is to edit DICOM files to make them match some particular requirements.
+FillDCM is the DICOM tool you need if you have to:
+- fill empty or missing DICOM tags with random or specified values
+- overwrite some DICOM tags with a specified values
 
--   0008,0090 - Referring Physician (PN): not null and not empty
--   0010,0010 - Patient name (PN): not null and not empty
--   0010,0020 - Patient's ID: not null and not empty
--   0010,0030 - Patient's birth date: not null and not empty
--   0010,0040 - Patient's sex: not null and not empty
--   0018,1000 - Device Serial Number
+```sh
+> python fill_dcm.py --help
+usage: FillDCM [-h] [-t --tag] [-to --tag-overwrite] [-ov] dcm_file [dcm_file ...]
+
+Tool to fill empty DICOM tags or to overwrite others.
+
+positional arguments:
+    dcm_file             DICOM files to edit
+
+options:
+    -h, --help           show this help message and exit
+    -t --tag             DICOM tag to fill if value is empty or undefined
+    -to --tag-overwrite  DICOM tag to overwrite with the specified value
+    -ov, --overwrite     Overwrite the original file. By default "_generated" is appended the the original filename and a new file is created.
+```
