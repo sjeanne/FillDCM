@@ -1,6 +1,6 @@
 import unittest
 from pydicom import Dataset
-from fill_dcm import adjust_dicom_dataset, generate_data
+from fill_dcm import adjust_dicom_dataset, update_data
 from json import loads
 
 MANAGED_TAGS = ["PatientName", "PatientID", "PatientBirthDate", "PatientSex",
@@ -10,6 +10,8 @@ MANAGED_TAGS = ["PatientName", "PatientID", "PatientBirthDate", "PatientSex",
 class TestAdjustDICOMDataset(unittest.TestCase):
 
     def load_dataset(self, json_dataset, tags_to_remove):
+        """ Load a DICOM dataset from a JSON payload
+        """
         json_ds = loads(json_dataset)
         for tag in tags_to_remove:
             if tag in json_ds:
@@ -19,130 +21,133 @@ class TestAdjustDICOMDataset(unittest.TestCase):
         return ds.from_json(json_ds)
 
     def test_missing_patient_name(self):
-        """ Input dataset has no PatientName. Adjusted dataset shall have the replacement PatientName
+        """ Input dataset has no PatientName and PatientName is a tag to fill. Adjusted dataset shall have the replacement PatientName
         """
-        ds = self.load_dataset(DICOM_DATASET_JSON, ["00100010"])
+        ds = self.load_dataset(DICOM_DATASET_JSON, tags_to_remove=["00100010"])
 
-        replacement_data = generate_data()
+        replacement_data = update_data(
+            {"tags": {"PatientName": None}, "tags_to_overwrite": None})
 
         self.assertFalse('PatientName' in ds)
         adjust_dicom_dataset(
             ds, replacement_data)
 
         self.assertTrue('PatientName' in ds)
-        self.assertEqual(ds.PatientName, replacement_data["PatientName"])
+        self.assertEqual(
+            ds.PatientName, replacement_data["tags"]["PatientName"])
+
+    def test_missing_patient_name_specified(self):
+        """ Input dataset has no PatientName and PatientName is a tag to fill with a specified value. Adjusted dataset shall have the specified PatientName
+        """
+        ds = self.load_dataset(DICOM_DATASET_JSON, tags_to_remove=["00100010"])
+
+        patient_name = "Hampton^Fredrick"
+        replacement_data = update_data(
+            {"tags": {"PatientName": patient_name}, "tags_to_overwrite": None})
+
+        self.assertEqual(patient_name, replacement_data["tags"]["PatientName"])
+        self.assertFalse('PatientName' in ds)
+        adjust_dicom_dataset(
+            ds, replacement_data)
+
+        self.assertTrue('PatientName' in ds)
+        self.assertEqual(
+            ds.PatientName, replacement_data["tags"]["PatientName"])
 
     def test_missing_birth_date(self):
-        """ Input dataset has no PatientBirthDate. Adjusted dataset shall have the replacement PatientBirthDate
+        """ Input dataset has no PatientBirthDate and PatientBirthDate is a tag to fill. Adjusted dataset shall have the replacement PatientBirthDate
         """
-        ds = self.load_dataset(DICOM_DATASET_JSON, ["00100030"])
+        ds = self.load_dataset(DICOM_DATASET_JSON, tags_to_remove=["00100030"])
 
-        replacement_data = generate_data()
+        replacement_data = update_data(
+            {"tags": {"PatientBirthDate": None}, "tags_to_overwrite": None})
 
         self.assertFalse('PatientBirthDate' in ds)
         adjust_dicom_dataset(ds, replacement_data)
         self.assertTrue('PatientBirthDate' in ds)
         self.assertEqual(ds.PatientBirthDate,
-                         replacement_data["PatientBirthDate"])
+                         replacement_data["tags"]["PatientBirthDate"])
 
-    def test_missing_patient_id(self):
-        """ Input dataset has no Patient ID (0010,0020). Adjusted dataset shall have the replacement Patient ID
+    def test_missing_birth_date_specified(self):
+        """ Input dataset has no PatientBirthDate and PatientBirthDate is a tag to fill with specified value. Adjusted dataset shall have the specified PatientBirthDate
         """
-        ds = self.load_dataset(DICOM_DATASET_JSON, ["00100020"])
+        ds = self.load_dataset(DICOM_DATASET_JSON, tags_to_remove=["00100030"])
 
-        replacement_data = generate_data()
+        patient_dob = "19480830"
+        replacement_data = update_data(
+            {"tags": {"PatientBirthDate": patient_dob}, "tags_to_overwrite": None})
 
-        self.assertFalse('PatientID' in ds)
+        self.assertEqual(
+            patient_dob, replacement_data["tags"]["PatientBirthDate"])
+        self.assertFalse('PatientBirthDate' in ds)
         adjust_dicom_dataset(ds, replacement_data)
-        self.assertTrue('PatientID' in ds)
-        self.assertEqual(ds.PatientID, replacement_data["PatientID"])
+        self.assertTrue('PatientBirthDate' in ds)
+        self.assertEqual(ds.PatientBirthDate,
+                         replacement_data["tags"]["PatientBirthDate"])
 
-    def test_missing_patient_sex(self):
-        """ Input dataset has no PatientSex. Adjusted dataset shall have the replacement PatientSex
+    def test_several_missing_tags(self):
+        """ Input dataset does not contain required tags. All tags shall be filled and adjusted.
         """
-        ds = self.load_dataset(DICOM_DATASET_JSON, ["00100040"])
+        ds = self.load_dataset(DICOM_DATASET_JSON, tags_to_remove=[
+                               "00080090", "00080012"])
 
-        replacement_data = generate_data()
-
-        self.assertFalse('PatientSex' in ds)
-        adjust_dicom_dataset(
-            ds, replacement_data)
-
-        self.assertTrue('PatientSex' in ds)
-        self.assertEqual(ds.PatientSex, replacement_data["PatientSex"])
-
-    def test_missing_referring_physician(self):
-        """ use an empty Dataset without Referring Physician. Adjusted dataset shall have the replacement Referring Physician
-        """
-        ds = self.load_dataset(DICOM_DATASET_JSON, ["00080090"])
-
-        replacement_data = generate_data()
-        self.assertFalse('ReferringPhysicianName' in ds)
+        replacement_data = update_data(
+            {"tags": {"InstanceCreationDate": None, "ReferringPhysicianName": None}, "tags_to_overwrite": None})
         adjust_dicom_dataset(ds, replacement_data)
-        self.assertTrue('ReferringPhysicianName' in ds)
-        self.assertEqual(ds.ReferringPhysicianName,
-                         replacement_data["ReferringPhysicianName"])
 
-    def test_missing_device_serial_number(self):
-        """ use an empty Dataset without Device Serial Number. Adjusted dataset shall have the replacement Device Serial Number
-        """
-        ds = self.load_dataset(DICOM_DATASET_JSON, ["00181000"])
+        self.assertEqual(
+            replacement_data["tags"]["InstanceCreationDate"], ds.InstanceCreationDate)
+        self.assertEqual(
+            replacement_data["tags"]["ReferringPhysicianName"], ds.ReferringPhysicianName)
 
-        replacement_data = generate_data()
-        self.assertFalse('DeviceSerialNumber' in ds)
-        adjust_dicom_dataset(ds, replacement_data)
-        self.assertTrue('DeviceSerialNumber' in ds)
-        self.assertEqual(ds.DeviceSerialNumber,
-                         replacement_data["DeviceSerialNumber"])
-
-    def test_all_fields_empty(self):
-        """ Input dataset contains all required tags but they are empty. All tags shall be adjusted.
+    def test_several_empty_tags(self):
+        """ Input dataset contains required tags, but are empty. All tags shall be adjusted.
         """
         ds = self.load_dataset(DICOM_DATASET_JSON, [])
-        for dcm_tag in MANAGED_TAGS:
-            ds[dcm_tag].clear()
+        ds["InstanceCreationDate"].clear()
+        ds["ReferringPhysicianName"].clear()
 
-        for dcm_tag in MANAGED_TAGS:
-            self.assertEqual(ds[dcm_tag].VM, 0)
+        self.assertEqual(ds["InstanceCreationDate"].VM, 0)
+        self.assertEqual(ds["ReferringPhysicianName"].VM, 0)
 
-        replacement_data = generate_data()
+        replacement_data = update_data(
+            {"tags": {"InstanceCreationDate": None, "ReferringPhysicianName": None}, "tags_to_overwrite": None})
         adjust_dicom_dataset(ds, replacement_data)
 
-        for dcm_tag in MANAGED_TAGS:
-            self.assertTrue(dcm_tag in ds)
-            self.assertEqual(ds[dcm_tag].value, replacement_data[dcm_tag])
+        self.assertEqual(
+            replacement_data["tags"]["InstanceCreationDate"], ds.InstanceCreationDate)
+        self.assertEqual(
+            replacement_data["tags"]["ReferringPhysicianName"], ds.ReferringPhysicianName)
 
-    def test_all_fields_missing(self):
-        """ Input dataset contains none of the required  tags. All tags shall be filled with a value.
+    def test_several_missing_tags_with_replacement_value(self):
+        """ Input dataset does not contain required tags. All tags shall be filled and adjusted with replacement value.
         """
-        ds = Dataset()
+        ds = self.load_dataset(DICOM_DATASET_JSON, tags_to_remove=[
+                               "00080090", "00080012"])
 
-        for dcm_tag in MANAGED_TAGS:
-            self.assertFalse(dcm_tag in ds)
-
-        replacement_data = generate_data()
+        replacement_data = update_data(
+            {"tags": {"InstanceCreationDate": "19980712", "ReferringPhysicianName": "Zidane^Zinedine"}, "tags_to_overwrite": None})
         adjust_dicom_dataset(ds, replacement_data)
 
-        for dcm_tag in MANAGED_TAGS:
-            self.assertTrue(dcm_tag in ds)
-            self.assertEqual(ds[dcm_tag].value, replacement_data[dcm_tag])
+        self.assertEqual(
+            replacement_data["tags"]["InstanceCreationDate"], ds.InstanceCreationDate)
+        self.assertEqual(
+            replacement_data["tags"]["ReferringPhysicianName"], ds.ReferringPhysicianName)
 
-    def test_dataset_all_defined(self):
-        """ Input dataset contains all required tags Patient Name, Patient ID, Patient Birthday, Referring Physician, Device Serial Number. Values shall not be modified.
+    def test_several_missing_tags_with_values_to_overwrite(self):
+        """ Input dataset does not contain required tags. All tags shall be filled and adjusted with replacement value.
         """
-        ds = self.load_dataset(DICOM_DATASET_JSON, [])
+        ds = self.load_dataset(DICOM_DATASET_JSON, tags_to_remove=[
+                               "00080090", "00080012"])
 
-        original_data = {}
+        replacement_data = update_data(
+            {"tags": None, "tags_to_overwrite": {"InstanceCreationDate": "19980712", "ReferringPhysicianName": "Zidane^Zinedine"}})
+        adjust_dicom_dataset(ds, replacement_data)
 
-        for dcm_tag in MANAGED_TAGS:
-            self.assertTrue(dcm_tag in ds)
-            original_data[dcm_tag] = ds[dcm_tag].value
-
-        adjust_dicom_dataset(ds, generate_data())
-
-        for dcm_tag in MANAGED_TAGS:
-            self.assertTrue(dcm_tag in ds)
-            self.assertEqual(ds[dcm_tag].value, original_data[dcm_tag])
+        self.assertEqual(
+            replacement_data["tags_to_overwrite"]["InstanceCreationDate"], ds.InstanceCreationDate)
+        self.assertEqual(
+            replacement_data["tags_to_overwrite"]["ReferringPhysicianName"], ds.ReferringPhysicianName)
 
 
 DICOM_DATASET_JSON = r"""{
