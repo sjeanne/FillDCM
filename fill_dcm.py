@@ -213,7 +213,8 @@ def update_data(input_values):
                 match(tag_vr):
                     case 'AS':
                         input_values["tags"][tag] = generate_age_string()
-                    case    'SH', 'ST', 'TM', 'UI', 'US':
+                    case    'ST', 'TM', 'UI', 'US':
+                        # The following VR are not managed
                         raise InvalidParameter(
                             f"VR: {tag_vr} for tag {tag} not managed")
                     case 'DA':
@@ -230,6 +231,8 @@ def update_data(input_values):
                         input_values["tags"][tag] = generate_long_text()
                     case 'PN':
                         input_values["tags"][tag] = generate_personal_name()
+                    case 'SH':
+                        input_values["tags"][tag] = generate_short_string()
                     case _:
                         raise InvalidParameter(
                             f"VR: {tag_vr} for tag {tag} not managed")
@@ -335,6 +338,15 @@ def generate_long_text():
             A randomized LT value with at least one character and max 1024
     """
     return "".join(choices(string.ascii_letters + string.digits, k=randrange(1, 1024)))
+
+
+def generate_short_string():
+    """ Generate a data and follow DICOM SH VR specs.
+    https://dicom.nema.org/dicom/2013/output/chtml/part05/sect_6.2.html
+        Returns:
+            A randomized SH value with at least one character and max 16
+    """
+    return "".join(choices(string.ascii_letters + string.digits, k=randrange(1, 16)))
 
 
 def adjust_dicom_dataset(dataset, input_tags):
@@ -445,7 +457,8 @@ def verify_input_tags(input_args):
                 raise InvalidParameter(
                     f"Tag {tag} is not a valid tag from DICOM dictionary")
 
-    # TODO verify that values passed are correct according to  tag's VR
+    # TODO verify that values passed are correct according to  tag's VR.
+    # Add an option to enable/disable this check
 
 
 def parse_arguments(input_args):
@@ -491,6 +504,7 @@ def fill_dcm_executable():
 
     input_args = command_line.parse_args()
 
+    # TODO Create data structure to store tags
     input_tags, options = parse_arguments(input_args)
     verify_input_tags(input_tags)
 

@@ -4,7 +4,7 @@
 import unittest
 from copy import deepcopy
 import string
-from fill_dcm import generate_personal_name, generate_date, generate_lo, generate_id, update_data, InvalidParameter, generate_age_string, generate_decimal_string, generate_date_time, generate_integer_string, generate_long_text
+from fill_dcm import generate_personal_name, generate_date, generate_lo, generate_id, update_data, InvalidParameter, generate_age_string, generate_decimal_string, generate_date_time, generate_integer_string, generate_long_text, generate_short_string
 
 
 class TestGenerates(unittest.TestCase):
@@ -105,12 +105,12 @@ class TestGenerates(unittest.TestCase):
         self.assertIsNotNone(input_values["tags"]["ImageComments"])
 
     def test_update_data_throw_VR_SH(self):
-        """ SH VR is not managed, update_data() raises an InvalidParameter exception
+        """ SH VR is managed, update_data() creates a value for SH tags
         """
-        self.assertRaises(InvalidParameter,
-                          update_data, {"tags": {
-                              "StationName": None
-                          }, "tags_to_overwrite": None})
+        input_values = {
+            "tags": {"StationName": None}, "tags_to_overwrite": None}
+        update_data(input_values)
+        self.assertIsNotNone(input_values["tags"]["StationName"])
 
     def test_update_data_throw_VR_ST(self):
         """ ST VR is not managed, update_data() raises an InvalidParameter exception
@@ -229,3 +229,10 @@ class TestGenerates(unittest.TestCase):
         long_text = generate_long_text()
         self.assertLessEqual(len(long_text), 1024)
         self.assertGreaterEqual(len(long_text), 1)
+
+    def test_generate_short_string(self):
+        """ Test generate_short_string() 
+        """
+        short_string = generate_short_string()
+        self.assertLessEqual(len(short_string), 16)
+        self.assertGreaterEqual(len(short_string), 1)
