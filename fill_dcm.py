@@ -213,7 +213,7 @@ def update_data(input_values):
                 match(tag_vr):
                     case 'AS':
                         input_values["tags"][tag] = generate_age_string()
-                    case    'ST', 'TM', 'UI', 'US':
+                    case 'ST', 'TM', 'UI', 'US':
                         # The following VR are not managed
                         raise InvalidParameter(
                             f"VR: {tag_vr} for tag {tag} not managed")
