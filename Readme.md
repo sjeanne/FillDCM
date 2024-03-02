@@ -10,16 +10,17 @@ Tags are specified by their names as string, following DICOM dictionary: Patient
 > python fill_dcm.py --help
 usage: FillDCM [-h] [-t --tag] [-to --tag-overwrite] [-ov] dcm_file [dcm_file ...]
 
-Tool to fill empty or missing DICOM tags or to overwrite others.
+Tool to fill missing or empty DICOM tags or to overwrite others.
 
 positional arguments:
-    dcm_file             DICOM files to edit
+  dcm_file              List of DICOM files to edit
 
 options:
-    -h, --help           show this help message and exit
-    -t --tag             DICOM tag to fill if value is empty or missing. Tags are formatted: <Tag name as a string>[=<value>]
-    -to --tag-overwrite  DICOM tag to overwrite with the specified value. Tags are formatted: <Tag name as a string>=<value>
-    -ov, --overwrite     Overwrite the original file. By default "_generated" is appended the the original filename and a new file is created.
+  -h, --help            show this help message and exit
+  -t --tag              DICOM tag to fill if missing or the value is empty or undefined. Tag specification: <Tag name as a string>[=<value>]
+  -to --tag-overwrite   DICOM tag to overwrite with the specified value. Tags specification: <Tag name as a string>=<value>
+  -ov, --overwrite-file
+                        Overwrite the original file. By default "_generated" is appended the the original filename and a new file is created.
 ```
 
 # Examples

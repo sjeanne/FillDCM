@@ -4,7 +4,7 @@
 import unittest
 from copy import deepcopy
 import string
-from fill_dcm import generate_personal_name, generate_date, generate_lo, generate_id, update_data, InvalidParameter, generate_age_string, generate_decimal_string, generate_date_time, generate_integer_string, generate_long_text, generate_short_string
+from fill_dcm import generate_personal_name, generate_date, generate_lo, generate_id, update_data, InvalidParameter, generate_age_string, generate_decimal_string, generate_date_time, generate_integer_string, generate_long_text, generate_short_string, generate_short_text
 
 
 class TestGenerates(unittest.TestCase):
@@ -104,7 +104,7 @@ class TestGenerates(unittest.TestCase):
         update_data(input_values)
         self.assertIsNotNone(input_values["tags"]["ImageComments"])
 
-    def test_update_data_throw_VR_SH(self):
+    def test_update_data_vr_sh(self):
         """ SH VR is managed, update_data() creates a value for SH tags
         """
         input_values = {
@@ -112,13 +112,13 @@ class TestGenerates(unittest.TestCase):
         update_data(input_values)
         self.assertIsNotNone(input_values["tags"]["StationName"])
 
-    def test_update_data_throw_VR_ST(self):
-        """ ST VR is not managed, update_data() raises an InvalidParameter exception
+    def test_update_data_vr_st(self):
+        """ ST VR is managed, update_data() creates a value for ST tags
         """
-        self.assertRaises(InvalidParameter,
-                          update_data, {"tags": {
-                              "InstitutionAddress": None
-                          }, "tags_to_overwrite": None})
+        input_values = {
+            "tags": {"InstitutionAddress": None}, "tags_to_overwrite": None}
+        update_data(input_values)
+        self.assertIsNotNone(input_values["tags"]["InstitutionAddress"])
 
     def test_update_data_throw_VR_TM(self):
         """ TM VR is not managed, update_data() raises an InvalidParameter exception
@@ -236,3 +236,10 @@ class TestGenerates(unittest.TestCase):
         short_string = generate_short_string()
         self.assertLessEqual(len(short_string), 16)
         self.assertGreaterEqual(len(short_string), 1)
+
+    def test_generate_short_text(self):
+        """ Test generate_short_text() 
+        """
+        short_text = generate_short_text()
+        self.assertLessEqual(len(short_text), 1024)
+        self.assertGreaterEqual(len(short_text), 1)

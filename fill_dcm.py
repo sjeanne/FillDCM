@@ -213,7 +213,7 @@ def update_data(input_values):
                 match(tag_vr):
                     case 'AS':
                         input_values["tags"][tag] = generate_age_string()
-                    case 'ST', 'TM', 'UI', 'US':
+                    case 'TM', 'UI', 'US':
                         # The following VR are not managed
                         raise InvalidParameter(
                             f"VR: {tag_vr} for tag {tag} not managed")
@@ -233,6 +233,8 @@ def update_data(input_values):
                         input_values["tags"][tag] = generate_personal_name()
                     case 'SH':
                         input_values["tags"][tag] = generate_short_string()
+                    case 'ST':
+                        input_values["tags"][tag] = generate_short_text()
                     case _:
                         raise InvalidParameter(
                             f"VR: {tag_vr} for tag {tag} not managed")
@@ -347,6 +349,15 @@ def generate_short_string():
             A randomized SH value with at least one character and max 16
     """
     return "".join(choices(string.ascii_letters + string.digits, k=randrange(1, 16)))
+
+
+def generate_short_text():
+    """ Generate a data and follow DICOM ST VR specs.
+    https://dicom.nema.org/dicom/2013/output/chtml/part05/sect_6.2.html
+        Returns:
+            A randomized ST value with at least one character and max 1024
+    """
+    return "".join(choices(string.ascii_letters + string.digits, k=randrange(1, 1024)))
 
 
 def adjust_dicom_dataset(dataset, input_tags):
@@ -479,7 +490,7 @@ def parse_arguments(input_args):
             parsed_tags["tags_to_overwrite"][splitted_tag[0]] = None if len(
                 splitted_tag) == 1 else splitted_tag[1]
 
-    options = dict([("overwrite", input_args.overwrite)])
+    options = dict([("overwrite", input_args.overwrite_file)])
 
     return (parsed_tags, options)
 
@@ -489,16 +500,16 @@ def fill_dcm_executable():
     """
     command_line = argparse.ArgumentParser(
         prog="FillDCM",
-        description="Tool to fill empty DICOM tags or to overwrite others.",
+        description="Tool to fill missing or empty DICOM tags or to overwrite others.",
     )
     command_line.add_argument(
-        'files', metavar='dcm_file', nargs='+', help="DICOM files to edit")
+        'files', metavar='dcm_file', nargs='+', help="List of DICOM files to edit")
     command_line.add_argument('-t', metavar='--tag', action='append',
-                              help="DICOM tag to fill if value is empty or undefined")
+                              help="DICOM tag to fill if missing or the value is empty or undefined. Tag specification: <Tag name as a string>[=<value>]")
     command_line.add_argument('-to', metavar='--tag-overwrite', action='append',
-                              help="DICOM tag to overwrite with the specified value")
+                              help="DICOM tag to overwrite with the specified value. Tags specification: <Tag name as a string>=<value>")
     command_line.add_argument(
-        '-ov', '--overwrite',
+        '-ov', '--overwrite-file',
         action='store_true',
         help='Overwrite the original file. By default "_generated" is appended the the original filename and a new file is created.')
 
