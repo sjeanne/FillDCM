@@ -4,18 +4,8 @@
 import argparse
 import string
 from random import randrange, choices
-from enum import Enum
 from pathlib import Path
 from pydicom import dcmread, datadict, errors
-
-
-class Gender(str, Enum):
-    """ Gender enum 
-    """
-    MALE = 'M'
-    FEMALE = 'F'
-    NOT_SPECIFIED = 'O'
-
 
 class InvalidParameter(Exception):
     """ Exception to handle CLI parameter errors
@@ -187,19 +177,6 @@ PERSONAL_NAME_SAMPLE = {
                    "Roberts"]
 }
 
-
-def dicom_sex_to_gender(dcm_sex: str = ''):
-    """ Convert DICOM CS Sex values to Gender enum
-    """
-    match dcm_sex:
-        case 'M':
-            return Gender.MALE
-        case 'F':
-            return Gender.FEMALE
-        case _:
-            return Gender.NOT_SPECIFIED
-
-
 def update_data(input_values):
     """ Define a value to each tag without. The generated value matches tag's VR. 
         If a tag has a defined value, it is not updated.
@@ -297,7 +274,7 @@ def generate_integer_string() -> str:
     return f"{randrange(-1*2**31, (2**31)-1)}"
 
 
-def generate_personal_name(gender=Gender.NOT_SPECIFIED) -> str:
+def generate_personal_name() -> str:
     """ Generate a personal name and follow DICOM PN VR spec.
     https://dicom.nema.org/dicom/2013/output/chtml/part05/sect_6.2.html
     Only first and last names are filled.
@@ -306,13 +283,8 @@ def generate_personal_name(gender=Gender.NOT_SPECIFIED) -> str:
         A DICOM personal name
     """
     possible_first_names = []
-    if gender == Gender.FEMALE:
-        possible_first_names = PERSONAL_NAME_SAMPLE["first_names_female"]
-    elif gender == Gender.MALE:
-        possible_first_names = PERSONAL_NAME_SAMPLE["first_names_male"]
-    else:
-        possible_first_names.extend(PERSONAL_NAME_SAMPLE["first_names_female"])
-        possible_first_names.extend(PERSONAL_NAME_SAMPLE["first_names_male"])
+    possible_first_names.extend(PERSONAL_NAME_SAMPLE["first_names_female"])
+    possible_first_names.extend(PERSONAL_NAME_SAMPLE["first_names_male"])
     return f"{choices(PERSONAL_NAME_SAMPLE['last_names'])[0]}^{choices(possible_first_names)[0]}"
 
 

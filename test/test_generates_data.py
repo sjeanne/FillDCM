@@ -146,7 +146,7 @@ class TestGenerates(unittest.TestCase):
 
     def test_generate_personal_name(self):
         """ Test generate_personal_name()
-        """
+        """ 
         pn = generate_personal_name()
         splitted_pn = pn.split('^')
         self.assertEqual(len(splitted_pn), 2)
