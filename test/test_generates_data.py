@@ -4,7 +4,7 @@
 import unittest
 from copy import deepcopy
 import string
-from fill_dcm import generate_personal_name, generate_date, generate_lo, generate_id, update_data, InvalidParameter, generate_age_string, generate_decimal_string, generate_date_time, generate_integer_string, generate_long_text, generate_short_string, generate_short_text, generate_time
+from fill_dcm import generate_personal_name, generate_date, generate_lo, generate_id, update_data, InvalidParameter, generate_age_string, generate_decimal_string, generate_date_time, generate_integer_string, generate_long_text, generate_short_string, generate_short_text, generate_time, generate_unique_identifier
 
 
 class TestGenerates(unittest.TestCase):
@@ -129,12 +129,12 @@ class TestGenerates(unittest.TestCase):
         self.assertIsNotNone(input_values["tags"]["SeriesTime"])
 
     def test_update_data_throw_vr_ui(self):
-        """ UI VR is not managed, update_data() raises an InvalidParameter exception
+        """ UI VR is managed, update_data() creates a value for UI tags
         """
-        self.assertRaises(InvalidParameter,
-                          update_data, {"tags": {
-                              "DeviceUID": None
-                          }, "tags_to_overwrite": None})
+        input_values = {
+            "tags": {"DeviceUID": None}, "tags_to_overwrite": None}
+        update_data(input_values)
+        self.assertIsNotNone(input_values["tags"]["DeviceUID"])
 
     def test_update_data_throw_vr_us(self):
         """ US VR is not managed, update_data() raises an InvalidParameter exception
@@ -256,3 +256,13 @@ class TestGenerates(unittest.TestCase):
         self.assertLessEqual(int(time[2:4]), 59)
         # Check seconds
         self.assertLessEqual(int(time[4:]), 59)
+
+    def test_generate_unique_identifier(self):
+        """ Test generate_unique_identifier()
+        """
+        unique_identifier = generate_unique_identifier()
+        self.assertLessEqual(len(unique_identifier), 64)
+        splitted_uid = unique_identifier.split('.')
+        self.assertEqual(len(splitted_uid), 4)
+        for part in splitted_uid:
+            int(part) #each part is a number

@@ -213,7 +213,7 @@ def update_data(input_values):
                 match(tag_vr):
                     case 'AS':
                         input_values["tags"][tag] = generate_age_string()
-                    case 'UI', 'US':
+                    case 'US':
                         # The following VR are not managed
                         raise InvalidParameter(
                             f"VR: {tag_vr} for tag {tag} not managed")
@@ -237,6 +237,8 @@ def update_data(input_values):
                         input_values["tags"][tag] = generate_short_text()
                     case 'TM':
                         input_values["tags"][tag] = generate_time()
+                    case 'UI':
+                        input_values["tags"][tag] = generate_unique_identifier()
                     case _:
                         raise InvalidParameter(
                             f"VR: {tag_vr} for tag {tag} not managed")
@@ -368,6 +370,14 @@ def generate_time():
             A randomized TM value with the format "HHMMSS"
     """
     return f"{randrange(0, 23):02}{randrange(0, 59):02}{randrange(0, 59):02}"
+
+def generate_unique_identifier():
+    """ Generate a data and follow DICOM UI VR specs.
+    https://dicom.nema.org/dicom/2013/output/chtml/part05/sect_6.2.html
+        Returns:
+            A randomized UI value with the format <digits>.<digits>.<digits>.<digits>
+    """
+    return f"{randrange(1,1000)}.{randrange(1,1000)}.{randrange(1,1000)}.{randrange(1,1000)}"
 
 
 def adjust_dicom_dataset(dataset, input_tags):
