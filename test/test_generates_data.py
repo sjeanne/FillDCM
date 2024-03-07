@@ -4,7 +4,7 @@
 import unittest
 from copy import deepcopy
 import string
-from fill_dcm import generate_personal_name, generate_date, generate_lo, generate_id, update_data, InvalidParameter, generate_age_string, generate_decimal_string, generate_date_time, generate_integer_string, generate_long_text, generate_short_string, generate_short_text, generate_time, generate_unique_identifier
+from fill_dcm import generate_personal_name, generate_date, generate_lo, generate_id, update_data, InvalidParameter, generate_age_string, generate_decimal_string, generate_date_time, generate_integer_string, generate_long_text, generate_short_string, generate_short_text, generate_time, generate_unique_identifier, generate_unsigned_short
 
 
 class TestGenerates(unittest.TestCase):
@@ -137,12 +137,12 @@ class TestGenerates(unittest.TestCase):
         self.assertIsNotNone(input_values["tags"]["DeviceUID"])
 
     def test_update_data_throw_vr_us(self):
-        """ US VR is not managed, update_data() raises an InvalidParameter exception
+        """ US VR is managed, update_data() creates a value for US tags
         """
-        self.assertRaises(InvalidParameter,
-                          update_data, {"tags": {
-                              "Rows": None
-                          }, "tags_to_overwrite": None})
+        input_values = {
+            "tags": {"Rows": None}, "tags_to_overwrite": None}
+        update_data(input_values)
+        self.assertIsNotNone(input_values["tags"]["Rows"])
 
     def test_generate_personal_name(self):
         """ Test generate_personal_name()
@@ -266,3 +266,10 @@ class TestGenerates(unittest.TestCase):
         self.assertEqual(len(splitted_uid), 4)
         for part in splitted_uid:
             int(part) #each part is a number
+
+    def test_generate_unsigned_short(self):
+        """ Test generate_unsigned_short()
+        """
+        unsigned_short = generate_unsigned_short()
+        self.assertGreaterEqual(unsigned_short, 0)
+        self.assertLess(unsigned_short, 65536)
