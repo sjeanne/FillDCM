@@ -4,7 +4,7 @@
 import unittest
 from copy import deepcopy
 import string
-from fill_dcm import generate_personal_name, generate_date, generate_lo, generate_id, update_data, InvalidParameter, generate_age_string, generate_decimal_string, generate_date_time, generate_integer_string, generate_long_text, generate_short_string, generate_short_text
+from fill_dcm import generate_personal_name, generate_date, generate_lo, generate_id, update_data, InvalidParameter, generate_age_string, generate_decimal_string, generate_date_time, generate_integer_string, generate_long_text, generate_short_string, generate_short_text, generate_time
 
 
 class TestGenerates(unittest.TestCase):
@@ -120,13 +120,13 @@ class TestGenerates(unittest.TestCase):
         update_data(input_values)
         self.assertIsNotNone(input_values["tags"]["InstitutionAddress"])
 
-    def test_update_data_throw_VR_TM(self):
-        """ TM VR is not managed, update_data() raises an InvalidParameter exception
+    def test_update_data_throw_vr_tm(self):
+        """ TM VR is managed, update_data() creates a value for TM tags
         """
-        self.assertRaises(InvalidParameter,
-                          update_data, {"tags": {
-                              "SeriesTime": None
-                          }, "tags_to_overwrite": None})
+        input_values = {
+            "tags": {"SeriesTime": None}, "tags_to_overwrite": None}
+        update_data(input_values)
+        self.assertIsNotNone(input_values["tags"]["SeriesTime"])
 
     def test_update_data_throw_vr_ui(self):
         """ UI VR is not managed, update_data() raises an InvalidParameter exception
@@ -243,3 +243,16 @@ class TestGenerates(unittest.TestCase):
         short_text = generate_short_text()
         self.assertLessEqual(len(short_text), 1024)
         self.assertGreaterEqual(len(short_text), 1)
+
+    def test_generate_time(self):
+        """ Test generate_time() 
+        """
+        time = generate_time()
+        self.assertEqual(len(time), 6)
+        self.assertTrue(time.isdigit())
+        # Check hours
+        self.assertLessEqual(int(time[0:2]), 23)
+        # Check minutes
+        self.assertLessEqual(int(time[2:4]), 59)
+        # Check seconds
+        self.assertLessEqual(int(time[4:]), 59)
