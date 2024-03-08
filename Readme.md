@@ -29,7 +29,13 @@ options:
 
 You want patient's data to not be empty or missing and don't expect a particular value:
 ```sh
-> python fill_dcm.py --tag PatientName --tag PatientID --tag PatientBirthDate --tag PatientSex --tag PatientWeight <list of dcm files>
+> python fill_dcm.py 
+    --tag PatientName 
+    --tag PatientID 
+    --tag PatientBirthDate 
+    --tag PatientSex
+    --tag PatientWeight 
+    <list of dcm files>
 
 ```
 
@@ -37,7 +43,10 @@ You want patient's data to not be empty or missing and don't expect a particular
 
 You want to overwrite all tags related to the Institution
 ```sh
-> python fill_dcm.py --tag-overwrite InstitutionName="Github Hospital" --tag-overwrite InstitutionAddress="42 Git street, Github town" <list of dcm files>
+> python fill_dcm.py 
+    --tag-overwrite InstitutionName="Github Hospital" 
+    --tag-overwrite InstitutionAddress="42 Git street, Github town" 
+    <list of dcm files>
 
 ```
 
