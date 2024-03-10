@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "filldcm"
+version = "0.1.0"
+description = "Ajust DCM files"
+authors = ["Sylvain Jeanne <jeanne.sylvain.dev@gmail.com>"]
+readme = "Readme.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pydicom = "^2.4.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
