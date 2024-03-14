@@ -2,6 +2,7 @@
 """
 
 import argparse
+from typing import Dict, List, Tuple
 from pathlib import Path
 from pydicom import dcmread, datadict, errors
 from filldcm import vr_generators
@@ -16,16 +17,22 @@ class InputTags():
     """ Contains all DICOM tags to fill or to overwrite
     """
 
-    def __init__(self, tags=None, tags_to_overwrite=None):
+    def __init__(self, tags: Dict[str, str] = None, tags_to_overwrite: Dict[str, str] = None):
+        """InputTags constructor
+
+        Args:
+            tags (dict, optional): Dictionary of tag to fill. Defaults to None.
+            tags_to_overwrite (dict, optional): Dictionary of tag to overwrite. Defaults to None.
+        """
         if tags is None:
             tags = {}
         if tags_to_overwrite is None:
             tags_to_overwrite = {}
-        self.tags = tags
-        self.tags_to_overwrite = tags_to_overwrite
+        self.tags: Dict[str, str] = tags
+        self.tags_to_overwrite: Dict[str, str] = tags_to_overwrite
 
 
-def update_data(input_values: InputTags):
+def update_data(input_values: InputTags) -> InputTags:
     """ Define a value to each tag without. The generated value matches tag's VR. 
         If a tag has a defined value, it is not updated.
         Parameters:
@@ -100,11 +107,11 @@ def adjust_dicom_dataset(dataset, input_tags: InputTags):
             dataset[dcm_tag].value = tag_value
 
 
-def output_filepath(original_file_path, overwrite_option=False):
+def output_filepath(original_file_path: str, overwrite_option: bool = False) -> str:
     """ Generate the output filepath. If no overwrite, '_modified' is appended to the input. Otherwise, the input is returned
     Args:
         original_file_path (string) Path to the input file
-        overwrite_option (boolean) True to overwrite the input file
+        overwrite_option (boolean, optional) True to overwrite the input file
     """
     output_file_path = original_file_path
     if not overwrite_option:
@@ -112,10 +119,8 @@ def output_filepath(original_file_path, overwrite_option=False):
         output_file_path = f"{path_to_file.parent}/{path_to_file.stem}_modified{path_to_file.suffix}"
     return output_file_path
 
-# TODO add type to function argument and returns
 
-
-def adjust_dicom_files(files, input_tags: InputTags, options):
+def adjust_dicom_files(files: List[str], input_tags: InputTags, options: object) -> None:
     """ Adjust DICOM files according to rules and values passed as input
 
     Args:
@@ -150,7 +155,7 @@ def tag_is_in_dicom_dictionary(tag: str) -> bool:
     return datadict.dictionary_has_tag(tag)
 
 
-def verify_input_tags(input_args: InputTags):
+def verify_input_tags(input_args: InputTags) -> None:
     """ Verify validity of inputs arguments. Rules:
         - a tag can't be in both list (tag and tag to overwrite)
         - a tag to overwrite must have a value (e.g "tag=value")
@@ -187,8 +192,13 @@ def verify_input_tags(input_args: InputTags):
     # Add an option to enable/disable this check
 
 
-def parse_arguments(input_args):
+def parse_arguments(input_args: argparse.Namespace) -> Tuple[InputTags, object]:
     """ Parse input arguments and return two dictionaries of tag and tag_to_overwrite and also options
+
+    Args:
+        input_args (argparse.Namespace): CLI parameters
+    Returns:
+        Tuple[InputTags, object]: InputTags and options parsed from CLI parameters
     """
     parsed_tags = InputTags()
     # tags
@@ -210,7 +220,7 @@ def parse_arguments(input_args):
     return (parsed_tags, options)
 
 
-def fill_dcm_executable():
+def fill_dcm_executable() -> None:
     """ Main function that does the job
     """
     command_line = argparse.ArgumentParser(
@@ -228,7 +238,7 @@ def fill_dcm_executable():
         action='store_true',
         help='Overwrite the original file. By default "_generated" is appended the the original filename and a new file is created.')
 
-    input_args = command_line.parse_args()
+    input_args: argparse.Namespace = command_line.parse_args()
 
     # TODO Create data structure to store options
     input_tags, options = parse_arguments(input_args)
