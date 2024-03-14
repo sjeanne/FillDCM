@@ -1,7 +1,10 @@
+"""Unit test
+"""
+
 import unittest
-from pydicom import Dataset
-from fill_dcm import adjust_dicom_dataset, update_data
 from json import loads
+from pydicom import Dataset
+from filldcm import fill_dcm
 
 MANAGED_TAGS = ["PatientName", "PatientID", "PatientBirthDate", "PatientSex",
                 "ReferringPhysicianName", "DeviceSerialNumber"]
@@ -25,11 +28,11 @@ class TestAdjustDICOMDataset(unittest.TestCase):
         """
         ds = self.load_dataset(DICOM_DATASET_JSON, tags_to_remove=["00100010"])
 
-        replacement_data = update_data(
+        replacement_data = fill_dcm.update_data(
             {"tags": {"PatientName": None}, "tags_to_overwrite": None})
 
         self.assertFalse('PatientName' in ds)
-        adjust_dicom_dataset(
+        fill_dcm.adjust_dicom_dataset(
             ds, replacement_data)
 
         self.assertTrue('PatientName' in ds)
@@ -42,12 +45,12 @@ class TestAdjustDICOMDataset(unittest.TestCase):
         ds = self.load_dataset(DICOM_DATASET_JSON, tags_to_remove=["00100010"])
 
         patient_name = "Hampton^Fredrick"
-        replacement_data = update_data(
+        replacement_data = fill_dcm.update_data(
             {"tags": {"PatientName": patient_name}, "tags_to_overwrite": None})
 
         self.assertEqual(patient_name, replacement_data["tags"]["PatientName"])
         self.assertFalse('PatientName' in ds)
-        adjust_dicom_dataset(
+        fill_dcm.adjust_dicom_dataset(
             ds, replacement_data)
 
         self.assertTrue('PatientName' in ds)
@@ -59,11 +62,11 @@ class TestAdjustDICOMDataset(unittest.TestCase):
         """
         ds = self.load_dataset(DICOM_DATASET_JSON, tags_to_remove=["00100030"])
 
-        replacement_data = update_data(
+        replacement_data = fill_dcm.update_data(
             {"tags": {"PatientBirthDate": None}, "tags_to_overwrite": None})
 
         self.assertFalse('PatientBirthDate' in ds)
-        adjust_dicom_dataset(ds, replacement_data)
+        fill_dcm.adjust_dicom_dataset(ds, replacement_data)
         self.assertTrue('PatientBirthDate' in ds)
         self.assertEqual(ds.PatientBirthDate,
                          replacement_data["tags"]["PatientBirthDate"])
@@ -74,13 +77,13 @@ class TestAdjustDICOMDataset(unittest.TestCase):
         ds = self.load_dataset(DICOM_DATASET_JSON, tags_to_remove=["00100030"])
 
         patient_dob = "19480830"
-        replacement_data = update_data(
+        replacement_data = fill_dcm.update_data(
             {"tags": {"PatientBirthDate": patient_dob}, "tags_to_overwrite": None})
 
         self.assertEqual(
             patient_dob, replacement_data["tags"]["PatientBirthDate"])
         self.assertFalse('PatientBirthDate' in ds)
-        adjust_dicom_dataset(ds, replacement_data)
+        fill_dcm.adjust_dicom_dataset(ds, replacement_data)
         self.assertTrue('PatientBirthDate' in ds)
         self.assertEqual(ds.PatientBirthDate,
                          replacement_data["tags"]["PatientBirthDate"])
@@ -91,9 +94,9 @@ class TestAdjustDICOMDataset(unittest.TestCase):
         ds = self.load_dataset(DICOM_DATASET_JSON, tags_to_remove=[
                                "00080090", "00080012"])
 
-        replacement_data = update_data(
+        replacement_data = fill_dcm.update_data(
             {"tags": {"InstanceCreationDate": None, "ReferringPhysicianName": None}, "tags_to_overwrite": None})
-        adjust_dicom_dataset(ds, replacement_data)
+        fill_dcm.adjust_dicom_dataset(ds, replacement_data)
 
         self.assertEqual(
             replacement_data["tags"]["InstanceCreationDate"], ds.InstanceCreationDate)
@@ -110,9 +113,9 @@ class TestAdjustDICOMDataset(unittest.TestCase):
         self.assertEqual(ds["InstanceCreationDate"].VM, 0)
         self.assertEqual(ds["ReferringPhysicianName"].VM, 0)
 
-        replacement_data = update_data(
+        replacement_data = fill_dcm.update_data(
             {"tags": {"InstanceCreationDate": None, "ReferringPhysicianName": None}, "tags_to_overwrite": None})
-        adjust_dicom_dataset(ds, replacement_data)
+        fill_dcm.adjust_dicom_dataset(ds, replacement_data)
 
         self.assertEqual(
             replacement_data["tags"]["InstanceCreationDate"], ds.InstanceCreationDate)
@@ -125,9 +128,9 @@ class TestAdjustDICOMDataset(unittest.TestCase):
         ds = self.load_dataset(DICOM_DATASET_JSON, tags_to_remove=[
                                "00080090", "00080012"])
 
-        replacement_data = update_data(
+        replacement_data = fill_dcm.update_data(
             {"tags": {"InstanceCreationDate": "19980712", "ReferringPhysicianName": "Zidane^Zinedine"}, "tags_to_overwrite": None})
-        adjust_dicom_dataset(ds, replacement_data)
+        fill_dcm.adjust_dicom_dataset(ds, replacement_data)
 
         self.assertEqual(
             replacement_data["tags"]["InstanceCreationDate"], ds.InstanceCreationDate)
@@ -140,9 +143,9 @@ class TestAdjustDICOMDataset(unittest.TestCase):
         ds = self.load_dataset(DICOM_DATASET_JSON, tags_to_remove=[
                                "00080090", "00080012"])
 
-        replacement_data = update_data(
+        replacement_data = fill_dcm.update_data(
             {"tags": None, "tags_to_overwrite": {"InstanceCreationDate": "19980712", "ReferringPhysicianName": "Zidane^Zinedine"}})
-        adjust_dicom_dataset(ds, replacement_data)
+        fill_dcm.adjust_dicom_dataset(ds, replacement_data)
 
         self.assertEqual(
             replacement_data["tags_to_overwrite"]["InstanceCreationDate"], ds.InstanceCreationDate)

@@ -4,7 +4,7 @@
 import unittest
 from copy import deepcopy
 import string
-from fill_dcm import generate_personal_name, generate_date, generate_lo, generate_id, update_data, InvalidParameter, generate_age_string, generate_decimal_string, generate_date_time, generate_integer_string, generate_long_text, generate_short_string, generate_short_text, generate_time, generate_unique_identifier, generate_unsigned_short
+from filldcm import fill_dcm
 
 
 class TestGenerates(unittest.TestCase):
@@ -26,7 +26,7 @@ class TestGenerates(unittest.TestCase):
         }
 
         updated_values = deepcopy(input_values)
-        update_data(updated_values)
+        fill_dcm.update_data(updated_values)
 
         # Tags are not updated
         self.assertEqual(
@@ -51,7 +51,7 @@ class TestGenerates(unittest.TestCase):
         }
 
         updated_values = deepcopy(input_values)
-        update_data(updated_values)
+        fill_dcm.update_data(updated_values)
 
         # Tags shall not be updated
         self.assertEqual(input_values["tags_to_overwrite"]["PatientID"],
@@ -62,14 +62,14 @@ class TestGenerates(unittest.TestCase):
     def test_update_data_with_empty_input(self):
         """ Empty structure is passed, no exception are raised.
         """
-        update_data({"tags": None, "tags_to_overwrite": None})
+        fill_dcm.update_data({"tags": None, "tags_to_overwrite": None})
 
     def test_update_data_vr_as(self):
         """ AS VR is managed, update_data() creates a value for AG tags
         """
         input_values = {
             "tags": {"PatientAge": None}, "tags_to_overwrite": None}
-        update_data(input_values)
+        fill_dcm.update_data(input_values)
         self.assertIsNotNone(input_values["tags"]["PatientAge"])
 
     def test_update_data_vr_ds(self):
@@ -77,7 +77,7 @@ class TestGenerates(unittest.TestCase):
         """
         input_values = {
             "tags": {"PixelSpacing": None}, "tags_to_overwrite": None}
-        update_data(input_values)
+        fill_dcm.update_data(input_values)
         self.assertIsNotNone(input_values["tags"]["PixelSpacing"])
 
     def test_update_data_vr_dt(self):
@@ -85,7 +85,7 @@ class TestGenerates(unittest.TestCase):
         """
         input_values = {
             "tags": {"AcquisitionDateTime": None}, "tags_to_overwrite": None}
-        update_data(input_values)
+        fill_dcm.update_data(input_values)
         self.assertIsNotNone(input_values["tags"]["AcquisitionDateTime"])
 
     def test_update_data_vr_is(self):
@@ -93,7 +93,7 @@ class TestGenerates(unittest.TestCase):
         """
         input_values = {
             "tags": {"SeriesNumber": None}, "tags_to_overwrite": None}
-        update_data(input_values)
+        fill_dcm.update_data(input_values)
         self.assertIsNotNone(input_values["tags"]["SeriesNumber"])
 
     def test_update_data_vr_lt(self):
@@ -101,7 +101,7 @@ class TestGenerates(unittest.TestCase):
         """
         input_values = {
             "tags": {"ImageComments": None}, "tags_to_overwrite": None}
-        update_data(input_values)
+        fill_dcm.update_data(input_values)
         self.assertIsNotNone(input_values["tags"]["ImageComments"])
 
     def test_update_data_vr_sh(self):
@@ -109,7 +109,7 @@ class TestGenerates(unittest.TestCase):
         """
         input_values = {
             "tags": {"StationName": None}, "tags_to_overwrite": None}
-        update_data(input_values)
+        fill_dcm.update_data(input_values)
         self.assertIsNotNone(input_values["tags"]["StationName"])
 
     def test_update_data_vr_st(self):
@@ -117,7 +117,7 @@ class TestGenerates(unittest.TestCase):
         """
         input_values = {
             "tags": {"InstitutionAddress": None}, "tags_to_overwrite": None}
-        update_data(input_values)
+        fill_dcm.update_data(input_values)
         self.assertIsNotNone(input_values["tags"]["InstitutionAddress"])
 
     def test_update_data_throw_vr_tm(self):
@@ -125,7 +125,7 @@ class TestGenerates(unittest.TestCase):
         """
         input_values = {
             "tags": {"SeriesTime": None}, "tags_to_overwrite": None}
-        update_data(input_values)
+        fill_dcm.update_data(input_values)
         self.assertIsNotNone(input_values["tags"]["SeriesTime"])
 
     def test_update_data_throw_vr_ui(self):
@@ -133,7 +133,7 @@ class TestGenerates(unittest.TestCase):
         """
         input_values = {
             "tags": {"DeviceUID": None}, "tags_to_overwrite": None}
-        update_data(input_values)
+        fill_dcm.update_data(input_values)
         self.assertIsNotNone(input_values["tags"]["DeviceUID"])
 
     def test_update_data_throw_vr_us(self):
@@ -141,13 +141,13 @@ class TestGenerates(unittest.TestCase):
         """
         input_values = {
             "tags": {"Rows": None}, "tags_to_overwrite": None}
-        update_data(input_values)
+        fill_dcm.update_data(input_values)
         self.assertIsNotNone(input_values["tags"]["Rows"])
 
     def test_generate_personal_name(self):
         """ Test generate_personal_name()
-        """ 
-        pn = generate_personal_name()
+        """
+        pn = fill_dcm.generate_personal_name()
         splitted_pn = pn.split('^')
         self.assertEqual(len(splitted_pn), 2)
         self.assertGreater(len(splitted_pn[0]), 0)
@@ -156,7 +156,7 @@ class TestGenerates(unittest.TestCase):
     def test_generate_date(self):
         """ Test generate_date() 
         """
-        date = generate_date()
+        date = fill_dcm.generate_date()
         self.assertEqual(len(date), 8)
         self.assertTrue(date.isdigit())
         # Check years
@@ -169,20 +169,20 @@ class TestGenerates(unittest.TestCase):
     def test_generate_patient_id(self):
         """ Test generate_patient_id()
         """
-        patient_id = generate_id()
+        patient_id = fill_dcm.generate_id()
         self.assertGreater(len(patient_id), 0)
 
     def test_generate_lo(self):
         """ Test generate_lo() 
         """
-        long_string = generate_lo()
+        long_string = fill_dcm.generate_lo()
         self.assertLessEqual(len(long_string), 64)
         self.assertGreaterEqual(len(long_string), 1)
 
     def test_generate_age_string(self):
         """ Test generate_age_string()
         """
-        age_string = generate_age_string()
+        age_string = fill_dcm.generate_age_string()
         self.assertEqual(len(age_string), 4)
         self.assertTrue(age_string[0:3].isdigit())
         self.assertEqual(age_string[-1], "Y")
@@ -190,7 +190,7 @@ class TestGenerates(unittest.TestCase):
     def test_generate_decimal_string(self):
         """ Test generate_decimal_string()
         """
-        decimal_string = generate_decimal_string()
+        decimal_string = fill_dcm.generate_decimal_string()
         self.assertNotEqual(len(decimal_string), 0)
         self.assertLessEqual(len(decimal_string), 16)
         for c in list(decimal_string):
@@ -199,7 +199,7 @@ class TestGenerates(unittest.TestCase):
     def test_generate_date_time(self):
         """ Test generate_date_time() 
         """
-        date_time = generate_date_time()
+        date_time = fill_dcm.generate_date_time()
         self.assertEqual(len(date_time), 14)
         self.assertTrue(date_time.isdigit())
         # Check years
@@ -218,7 +218,7 @@ class TestGenerates(unittest.TestCase):
     def test_generate_integer_string(self):
         """ Test generate_integer_string()
         """
-        integer_string = generate_integer_string()
+        integer_string = fill_dcm.generate_integer_string()
         integer = int(integer_string)
         self.assertGreaterEqual(integer, -1*2**31)
         self.assertLessEqual(integer, (2**31)-1)
@@ -226,28 +226,28 @@ class TestGenerates(unittest.TestCase):
     def test_generate_long_text(self):
         """ Test generate_long_text() 
         """
-        long_text = generate_long_text()
+        long_text = fill_dcm.generate_long_text()
         self.assertLessEqual(len(long_text), 1024)
         self.assertGreaterEqual(len(long_text), 1)
 
     def test_generate_short_string(self):
         """ Test generate_short_string() 
         """
-        short_string = generate_short_string()
+        short_string = fill_dcm.generate_short_string()
         self.assertLessEqual(len(short_string), 16)
         self.assertGreaterEqual(len(short_string), 1)
 
     def test_generate_short_text(self):
         """ Test generate_short_text() 
         """
-        short_text = generate_short_text()
+        short_text = fill_dcm.generate_short_text()
         self.assertLessEqual(len(short_text), 1024)
         self.assertGreaterEqual(len(short_text), 1)
 
     def test_generate_time(self):
         """ Test generate_time() 
         """
-        time = generate_time()
+        time = fill_dcm.generate_time()
         self.assertEqual(len(time), 6)
         self.assertTrue(time.isdigit())
         # Check hours
@@ -260,16 +260,16 @@ class TestGenerates(unittest.TestCase):
     def test_generate_unique_identifier(self):
         """ Test generate_unique_identifier()
         """
-        unique_identifier = generate_unique_identifier()
+        unique_identifier = fill_dcm.generate_unique_identifier()
         self.assertLessEqual(len(unique_identifier), 64)
         splitted_uid = unique_identifier.split('.')
         self.assertEqual(len(splitted_uid), 4)
         for part in splitted_uid:
-            int(part) #each part is a number
+            int(part)  # each part is a number
 
     def test_generate_unsigned_short(self):
         """ Test generate_unsigned_short()
         """
-        unsigned_short = generate_unsigned_short()
+        unsigned_short = fill_dcm.generate_unsigned_short()
         self.assertGreaterEqual(unsigned_short, 0)
         self.assertLess(unsigned_short, 65536)
