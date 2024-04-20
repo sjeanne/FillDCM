@@ -32,6 +32,18 @@ class InputTags():
         self.tags_to_overwrite: Dict[str, str] = tags_to_overwrite
 
 
+class Options():
+    """ Contains application options
+    """
+
+    def __init__(self, overwrite_output_file: bool = False):
+        """ Options constructor
+        Args:
+            overwrite_output_file (bool, optional): Set to True to overwrite DICOM input files. Defaults to False.
+        """
+        self.overwrite_output_file: bool = overwrite_output_file
+
+
 def update_data(input_values: InputTags) -> InputTags:
     """ Define a value to each tag without. The generated value matches tag's VR. 
         If a tag has a defined value, it is not updated.
@@ -41,46 +53,38 @@ def update_data(input_values: InputTags) -> InputTags:
     for tag in input_values.tags:
         if input_values.tags[tag] is None:
             tag_vr = datadict.dictionary_VR(tag)
+            tag_generator = None
             match(tag_vr):
                 case 'AS':
-                    input_values.tags[tag] = vr_generators.generate_age_string(
-                    )
+                    tag_generator = vr_generators.generate_age_string
                 case 'DA':
-                    input_values.tags[tag] = vr_generators.generate_date()
+                    tag_generator = vr_generators.generate_date
                 case 'DS':
-                    input_values.tags[tag] = vr_generators.generate_decimal_string(
-                    )
+                    tag_generator = vr_generators.generate_decimal_string
                 case 'DT':
-                    input_values.tags[tag] = vr_generators.generate_date_time(
-                    )
+                    tag_generator = vr_generators.generate_date_time
                 case 'IS':
-                    input_values.tags[tag] = vr_generators.generate_integer_string(
-                    )
+                    tag_generator = vr_generators.generate_integer_string
                 case 'LO':
-                    input_values.tags[tag] = vr_generators.generate_lo()
+                    tag_generator = vr_generators.generate_lo
                 case 'LT':
-                    input_values.tags[tag] = vr_generators.generate_long_text(
-                    )
+                    tag_generator = vr_generators.generate_long_text
                 case 'PN':
-                    input_values.tags[tag] = vr_generators.generate_personal_name(
-                    )
+                    tag_generator = vr_generators.generate_personal_name
                 case 'SH':
-                    input_values.tags[tag] = vr_generators.generate_short_string(
-                    )
+                    tag_generator = vr_generators.generate_short_string
                 case 'ST':
-                    input_values.tags[tag] = vr_generators.generate_short_text(
-                    )
+                    tag_generator = vr_generators.generate_short_text
                 case 'TM':
-                    input_values.tags[tag] = vr_generators.generate_time()
+                    tag_generator = vr_generators.generate_time
                 case 'UI':
-                    input_values.tags[tag] = vr_generators.generate_unique_identifier(
-                    )
+                    tag_generator = vr_generators.generate_unique_identifier
                 case 'US':
-                    input_values.tags[tag] = vr_generators.generate_unsigned_short(
-                    )
+                    tag_generator = vr_generators.generate_unsigned_short
                 case _:
                     raise InvalidParameter(
                         f"VR: {tag_vr} for tag {tag} not managed")
+            input_values.tags[tag] = tag_generator()
     return input_values
 
 
@@ -107,26 +111,26 @@ def adjust_dicom_dataset(dataset, input_tags: InputTags):
             dataset[dcm_tag].value = tag_value
 
 
-def output_filepath(original_file_path: str, overwrite_option: bool = False) -> str:
+def output_filepath(original_file_path: str, overwrite_output_file: bool = False) -> str:
     """ Generate the output filepath. If no overwrite, '_modified' is appended to the input. Otherwise, the input is returned
     Args:
         original_file_path (string) Path to the input file
         overwrite_option (boolean, optional) True to overwrite the input file
     """
     output_file_path = original_file_path
-    if not overwrite_option:
+    if not overwrite_output_file:
         path_to_file = Path(original_file_path)
         output_file_path = f"{path_to_file.parent}/{path_to_file.stem}_modified{path_to_file.suffix}"
     return output_file_path
 
 
-def adjust_dicom_files(files: List[str], input_tags: InputTags, options: object) -> None:
+def adjust_dicom_files(files: List[str], input_tags: InputTags, options: Options) -> None:
     """ Adjust DICOM files according to rules and values passed as input
 
     Args:
         files ([str]): list of path to DICOM files
         input_tags (InputTags): Tags to replace/filled in the list of DICOM files
-        options (obj): Options
+        options (Options): Options
 
     """
     update_data(input_tags)
@@ -140,7 +144,7 @@ def adjust_dicom_files(files: List[str], input_tags: InputTags, options: object)
             continue
 
         adjust_dicom_dataset(dataset, input_tags)
-        dataset.save_as(output_filepath(file, options["overwrite"]))
+        dataset.save_as(output_filepath(file, options.overwrite_output_file))
 
 
 def tag_is_in_dicom_dictionary(tag: str) -> bool:
@@ -192,13 +196,13 @@ def verify_input_tags(input_args: InputTags) -> None:
     # Add an option to enable/disable this check
 
 
-def parse_arguments(input_args: argparse.Namespace) -> Tuple[InputTags, object]:
+def parse_arguments(input_args: argparse.Namespace) -> Tuple[InputTags, Options]:
     """ Parse input arguments and return two dictionaries of tag and tag_to_overwrite and also options
 
     Args:
         input_args (argparse.Namespace): CLI parameters
     Returns:
-        Tuple[InputTags, object]: InputTags and options parsed from CLI parameters
+        Tuple[InputTags, Options]: InputTags and options parsed from CLI parameters
     """
     parsed_tags = InputTags()
     # tags
@@ -215,7 +219,7 @@ def parse_arguments(input_args: argparse.Namespace) -> Tuple[InputTags, object]:
             parsed_tags.tags_to_overwrite[splitted_tag[0]] = None if len(
                 splitted_tag) == 1 else splitted_tag[1]
 
-    options = dict([("overwrite", input_args.overwrite_file)])
+    options = Options(input_args.overwrite_file)
 
     return (parsed_tags, options)
 
@@ -238,9 +242,10 @@ def fill_dcm_executable() -> None:
         action='store_true',
         help='Overwrite the original file. By default "_generated" is appended the the original filename and a new file is created.')
 
+    # TODO allow to pass tag as tag "0010,0010"
+
     input_args: argparse.Namespace = command_line.parse_args()
 
-    # TODO Create data structure to store options
     input_tags, options = parse_arguments(input_args)
     verify_input_tags(input_tags)
 

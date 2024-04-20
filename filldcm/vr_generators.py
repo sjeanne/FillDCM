@@ -238,7 +238,7 @@ def generate_personal_name() -> str:
     return f"{choices(PERSONAL_NAME_SAMPLE['last_names'])[0]}^{choices(possible_first_names)[0]}"
 
 
-def generate_date():
+def generate_date() -> str:
     """ Generate a data and follow DICOM DA VR specs.
     https://dicom.nema.org/dicom/2013/output/chtml/part05/sect_6.2.html
     Years are in range [1950, 2020]
@@ -248,7 +248,7 @@ def generate_date():
     return f"{randrange(1950, 2020)}{randrange(1, 12):02}{randrange(1, 30):02}"
 
 
-def generate_lo():
+def generate_lo() -> str:
     """ Generate a data and follow DICOM LO VR specs.
     https://dicom.nema.org/dicom/2013/output/chtml/part05/sect_6.2.html
         Returns:
@@ -257,7 +257,7 @@ def generate_lo():
     return "".join(choices(string.ascii_letters + string.digits, k=randrange(1, 64)))
 
 
-def generate_long_text():
+def generate_long_text() -> str:
     """ Generate a data and follow DICOM LT VR specs.
     https://dicom.nema.org/dicom/2013/output/chtml/part05/sect_6.2.html
         Returns:
@@ -266,7 +266,7 @@ def generate_long_text():
     return "".join(choices(string.ascii_letters + string.digits, k=randrange(1, 1024)))
 
 
-def generate_short_string():
+def generate_short_string() -> str:
     """ Generate a data and follow DICOM SH VR specs.
     https://dicom.nema.org/dicom/2013/output/chtml/part05/sect_6.2.html
         Returns:
@@ -275,7 +275,7 @@ def generate_short_string():
     return "".join(choices(string.ascii_letters + string.digits, k=randrange(1, 16)))
 
 
-def generate_short_text():
+def generate_short_text() -> str:
     """ Generate a data and follow DICOM ST VR specs.
     https://dicom.nema.org/dicom/2013/output/chtml/part05/sect_6.2.html
         Returns:
@@ -284,7 +284,7 @@ def generate_short_text():
     return "".join(choices(string.ascii_letters + string.digits, k=randrange(1, 1024)))
 
 
-def generate_time():
+def generate_time() -> str:
     """ Generate a data and follow DICOM TM VR specs.
     https://dicom.nema.org/dicom/2013/output/chtml/part05/sect_6.2.html
         Returns:
@@ -293,7 +293,7 @@ def generate_time():
     return f"{randrange(0, 23):02}{randrange(0, 59):02}{randrange(0, 59):02}"
 
 
-def generate_unique_identifier():
+def generate_unique_identifier() -> str:
     """ Generate a data and follow DICOM UI VR specs.
     https://dicom.nema.org/dicom/2013/output/chtml/part05/sect_6.2.html
         Returns:
@@ -302,7 +302,7 @@ def generate_unique_identifier():
     return f"{randrange(1,1000)}.{randrange(1,1000)}.{randrange(1,1000)}.{randrange(1,1000)}"
 
 
-def generate_unsigned_short():
+def generate_unsigned_short() -> int:
     """ Generate a data and follow DICOM US VR specs.
     https://dicom.nema.org/dicom/2013/output/chtml/part05/sect_6.2.html
         Returns:
