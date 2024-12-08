@@ -28,18 +28,20 @@ class TestDataUpdate(unittest.TestCase):
 
         # Tags are not updated
         self.assertEqual(
-            updated_values.tags["PatientName"], input_values.tags["PatientName"]
+            updated_values.tags_to_fill["PatientName"],
+            input_values.tags_to_fill["PatientName"],
         )
         self.assertEqual(
-            updated_values.tags["PatientID"], input_values.tags["PatientID"]
+            updated_values.tags_to_fill["PatientID"],
+            input_values.tags_to_fill["PatientID"],
         )
         self.assertEqual(
-            updated_values.tags["PatientBirthDate"],
-            input_values.tags["PatientBirthDate"],
+            updated_values.tags_to_fill["PatientBirthDate"],
+            input_values.tags_to_fill["PatientBirthDate"],
         )
         # Tags have a value defined now
-        self.assertIsNotNone(updated_values.tags["ReferringPhysicianName"])
-        self.assertIsNotNone(updated_values.tags["DeviceSerialNumber"])
+        self.assertIsNotNone(updated_values.tags_to_fill["ReferringPhysicianName"])
+        self.assertIsNotNone(updated_values.tags_to_fill["DeviceSerialNumber"])
 
     def test_tags_to_overwrite_not_updated(self):
         """Tags to overwrite are not updated"""
@@ -56,12 +58,12 @@ class TestDataUpdate(unittest.TestCase):
 
         # Tags shall not be updated
         self.assertEqual(
-            input_values.tags_to_overwrite["PatientID"],
-            updated_values.tags_to_overwrite["PatientID"],
+            input_values.tags_to_replace["PatientID"],
+            updated_values.tags_to_replace["PatientID"],
         )
         self.assertEqual(
-            input_values.tags_to_overwrite["PatientName"],
-            updated_values.tags_to_overwrite["PatientName"],
+            input_values.tags_to_replace["PatientName"],
+            updated_values.tags_to_replace["PatientName"],
         )
 
     def test_update_data_with_empty_input(self):
@@ -72,58 +74,58 @@ class TestDataUpdate(unittest.TestCase):
         """AS VR is managed, update_data() creates a value for AG tags"""
         input_values = fill_dcm.InputTags({"PatientAge": None}, {})
         fill_dcm.update_data(input_values)
-        self.assertIsNotNone(input_values.tags["PatientAge"])
+        self.assertIsNotNone(input_values.tags_to_fill["PatientAge"])
 
     def test_update_data_vr_ds(self):
         """DS VR is managed, update_data() creates a value for DS tags"""
         input_values = fill_dcm.InputTags({"PixelSpacing": None}, {})
         fill_dcm.update_data(input_values)
-        self.assertIsNotNone(input_values.tags["PixelSpacing"])
+        self.assertIsNotNone(input_values.tags_to_fill["PixelSpacing"])
 
     def test_update_data_vr_dt(self):
         """DT VR is managed, update_data() creates a value for DT tags"""
         input_values = fill_dcm.InputTags({"AcquisitionDateTime": None}, {})
         fill_dcm.update_data(input_values)
-        self.assertIsNotNone(input_values.tags["AcquisitionDateTime"])
+        self.assertIsNotNone(input_values.tags_to_fill["AcquisitionDateTime"])
 
     def test_update_data_vr_is(self):
         """IS VR is managed, update_data() creates a value for IS tags"""
         input_values = fill_dcm.InputTags({"SeriesNumber": None}, {})
         fill_dcm.update_data(input_values)
-        self.assertIsNotNone(input_values.tags["SeriesNumber"])
+        self.assertIsNotNone(input_values.tags_to_fill["SeriesNumber"])
 
     def test_update_data_vr_lt(self):
         """LT VR is managed, update_data() creates a value for LT tags"""
         input_values = fill_dcm.InputTags({"ImageComments": None}, {})
         fill_dcm.update_data(input_values)
-        self.assertIsNotNone(input_values.tags["ImageComments"])
+        self.assertIsNotNone(input_values.tags_to_fill["ImageComments"])
 
     def test_update_data_vr_sh(self):
         """SH VR is managed, update_data() creates a value for SH tags"""
         input_values = fill_dcm.InputTags({"StationName": None}, {})
         fill_dcm.update_data(input_values)
-        self.assertIsNotNone(input_values.tags["StationName"])
+        self.assertIsNotNone(input_values.tags_to_fill["StationName"])
 
     def test_update_data_vr_st(self):
         """ST VR is managed, update_data() creates a value for ST tags"""
         input_values = fill_dcm.InputTags({"InstitutionAddress": None}, {})
         fill_dcm.update_data(input_values)
-        self.assertIsNotNone(input_values.tags["InstitutionAddress"])
+        self.assertIsNotNone(input_values.tags_to_fill["InstitutionAddress"])
 
     def test_update_data_throw_vr_tm(self):
         """TM VR is managed, update_data() creates a value for TM tags"""
         input_values = fill_dcm.InputTags({"SeriesTime": None}, {})
         fill_dcm.update_data(input_values)
-        self.assertIsNotNone(input_values.tags["SeriesTime"])
+        self.assertIsNotNone(input_values.tags_to_fill["SeriesTime"])
 
     def test_update_data_throw_vr_ui(self):
         """UI VR is managed, update_data() creates a value for UI tags"""
         input_values = fill_dcm.InputTags({"DeviceUID": None}, {})
         fill_dcm.update_data(input_values)
-        self.assertIsNotNone(input_values.tags["DeviceUID"])
+        self.assertIsNotNone(input_values.tags_to_fill["DeviceUID"])
 
     def test_update_data_throw_vr_us(self):
         """US VR is managed, update_data() creates a value for US tags"""
         input_values = fill_dcm.InputTags({"Rows": None}, {})
         fill_dcm.update_data(input_values)
-        self.assertIsNotNone(input_values.tags["Rows"])
+        self.assertIsNotNone(input_values.tags_to_fill["Rows"])

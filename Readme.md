@@ -2,25 +2,24 @@
 
 FillDCM is the DICOM tool you need if you have to:
 - fill empty or missing DICOM tags with random or specified values
-- overwrite some DICOM tags with a specified values
+- replace some DICOM tags with a specified values
 
 Tags are specified by their names as string, following DICOM dictionary: PatientID, AcquisitionData, etc.
 
 ```sh
 > python fill_dcm.py --help
-usage: FillDCM [-h] [-t --tag] [-to --tag-overwrite] [-ov] dcm_file [dcm_file ...]
+usage: FillDCM [-h] [-f --fill-tag] [-r --replace-tag] [-ov] dcm_file [dcm_file ...]
 
-Tool to fill missing or empty DICOM tags or to overwrite others.
+Tool to fill missing or empty DICOM tags or to replace others.
 
 positional arguments:
   dcm_file              List of DICOM files to edit
 
 options:
   -h, --help            show this help message and exit
-  -t --tag              DICOM tag to fill if missing or the value is empty or undefined. Tag specification: <Tag name as a string>[=<value>]
-  -to --tag-overwrite   DICOM tag to overwrite with the specified value. Tags specification: <Tag name as a string>=<value>
-  -ov, --overwrite-file
-                        Overwrite the original file. By default "_generated" is appended the the original filename and a new file is created.
+  -f --fill-tag         DICOM tag to fill if missing or if its value is empty or undefined. A value to fill can be specified. Tag specification: <Tag name as a string>[=<value>]
+  -r --replace-tag      DICOM tag to replace with the specified value. If the tag doesn't exist, it is appended to the dataset. Tags specification: <Tag name as a string>=<value>
+  -ov, --overwrite-file Overwrite the original file. By default "_generated" is appended the the original filename and a new file is created.
 ```
 
 # Examples
@@ -30,11 +29,11 @@ options:
 You want patient's data to not be empty or missing and don't expect a particular value:
 ```sh
 > python fill_dcm.py 
-    --tag PatientName 
-    --tag PatientID 
-    --tag PatientBirthDate 
-    --tag PatientSex
-    --tag PatientWeight 
+    --fill-tag PatientName 
+    --fill-tag PatientID 
+    --fill-tag PatientBirthDate 
+    --fill-tag PatientSex
+    --fill-tag PatientWeight 
     <list of dcm files>
 
 ```
@@ -44,8 +43,8 @@ You want patient's data to not be empty or missing and don't expect a particular
 You want to overwrite all tags related to the Institution
 ```sh
 > python fill_dcm.py 
-    --tag-overwrite InstitutionName="Github Hospital" 
-    --tag-overwrite InstitutionAddress="42 Git street, Github town" 
+    --replace-tag InstitutionName="Github Hospital" 
+    --replace-tag InstitutionAddress="42 Git street, Github town" 
     <list of dcm files>
 
 ```
