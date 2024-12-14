@@ -2,6 +2,7 @@
 """
 
 import argparse
+import json
 from pathlib import Path
 from typing import Dict, List, Tuple
 
@@ -207,6 +208,7 @@ def verify_input_tags(input_args: InputTags) -> None:
     # Add an option to enable/disable this check
 
 
+# TODO add unit test of parse_arguments()
 def parse_arguments(input_args: argparse.Namespace) -> Tuple[InputTags, Options]:
     """Parse input arguments and return two dictionaries of tag to fill and tag_to_replace and also options
 
@@ -216,20 +218,35 @@ def parse_arguments(input_args: argparse.Namespace) -> Tuple[InputTags, Options]
         Tuple[InputTags, Options]: InputTags and options parsed from CLI parameters
     """
     parsed_tags = InputTags()
+
     # tags to fill
-    if "f" in input_args and input_args.f is not None:
-        for raw_tag in input_args.f:
+    if "fill" in input_args and input_args.fill is not None:
+        for raw_tag in input_args.fill:
             splitted_tag = raw_tag.split("=", 1)
             parsed_tags.tags_to_fill[splitted_tag[0]] = (
                 None if len(splitted_tag) == 1 else splitted_tag[1]
             )
 
     # tags to replace
-    if "r" in input_args and input_args.r is not None:
-        for raw_tag_to_replace in input_args.r:
+    if "replace" in input_args and input_args.replace is not None:
+        for raw_tag_to_replace in input_args.replace:
             splitted_tag = raw_tag_to_replace.split("=", 1)
             parsed_tags.tags_to_replace[splitted_tag[0]] = (
                 None if len(splitted_tag) == 1 else splitted_tag[1]
+            )
+
+    # TODO: excluse JSON with regular inputs
+    if "json_path" in input_args and input_args.json_path is not None:
+        try:
+            with open(input_args.json_path, "r") as json_file:
+                parsed_json = json.load(json_file)
+                parsed_tags = InputTags(
+                    parsed_json.get("tags_to_fill", None),
+                    parsed_json.get("tags_to_replace", None),
+                )
+        except Exception as error:
+            raise InvalidParameter(
+                f"Error while reading JSON input. File: {input_args.json_path}. Error:{error}"
             )
 
     options = Options(input_args.overwrite_file)
@@ -250,13 +267,21 @@ def fill_dcm_executable() -> None:
         "-f",
         metavar="--fill-tag",
         action="append",
+        dest="fill",
         help="DICOM tag to fill if missing or if its value is empty or undefined. A value to fill can be specified. Tag specification: <Tag name as a string>[=<value>]",
     )
     command_line.add_argument(
         "-r",
         metavar="--replace-tag",
         action="append",
+        dest="replace",
         help="DICOM tag to replace with the specified value. If the tag doesn't exist, it is appended to the dataset. Tags specification: <Tag name as a string>=<value>",
+    )
+    command_line.add_argument(
+        "-j",
+        metavar="--json",
+        dest="json_path",
+        help="Specify a JSON file as input. This JSON file has a list of tags to fill or to replace.",
     )
     command_line.add_argument(
         "-ov",
@@ -268,10 +293,13 @@ def fill_dcm_executable() -> None:
     # TODO allow to pass tag as tag "0010,0010"
 
     input_args: argparse.Namespace = command_line.parse_args()
+    try:
+        input_tags, options = parse_arguments(input_args)
+        verify_input_tags(input_tags)
+    except InvalidParameter as invalid_parameter:
+        command_line.error(f"Invalid parameter: {invalid_parameter}")
 
-    input_tags, options = parse_arguments(input_args)
-    verify_input_tags(input_tags)
-
+    # TODO: catch exceptions
     adjust_dicom_files(input_args.files, input_tags, options)
 
 
