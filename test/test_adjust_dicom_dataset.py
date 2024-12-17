@@ -6,7 +6,7 @@ from json import loads
 
 from pydicom import Dataset
 
-from filldcm import fill_dcm
+from filldcm import fill_dcm, parse_argument
 
 
 class TestAdjustDICOMDataset(unittest.TestCase):
@@ -25,7 +25,7 @@ class TestAdjustDICOMDataset(unittest.TestCase):
         """Input dataset has no PatientName and PatientName is a tag to fill. Adjusted dataset shall have the replacement PatientName"""
         ds = self.load_dataset(DICOM_DATASET_JSON, tags_to_remove=["00100010"])
         replacement_data = fill_dcm.update_data(
-            fill_dcm.InputTags({"PatientName": None}, {})
+            parse_argument.InputTags({"PatientName": None}, {})
         )
 
         self.assertFalse("PatientName" in ds)
@@ -40,7 +40,7 @@ class TestAdjustDICOMDataset(unittest.TestCase):
 
         patient_name = "Hampton^Fredrick"
         replacement_data = fill_dcm.update_data(
-            fill_dcm.InputTags({"PatientName": patient_name}, {})
+            parse_argument.InputTags({"PatientName": patient_name}, {})
         )
 
         self.assertEqual(patient_name, replacement_data.tags_to_fill["PatientName"])
@@ -55,7 +55,7 @@ class TestAdjustDICOMDataset(unittest.TestCase):
         ds = self.load_dataset(DICOM_DATASET_JSON, tags_to_remove=["00100030"])
 
         replacement_data = fill_dcm.update_data(
-            fill_dcm.InputTags({"PatientBirthDate": None}, {})
+            parse_argument.InputTags({"PatientBirthDate": None}, {})
         )
 
         self.assertFalse("PatientBirthDate" in ds)
@@ -71,7 +71,7 @@ class TestAdjustDICOMDataset(unittest.TestCase):
 
         patient_dob = "19480830"
         replacement_data = fill_dcm.update_data(
-            fill_dcm.InputTags({"PatientBirthDate": patient_dob}, {})
+            parse_argument.InputTags({"PatientBirthDate": patient_dob}, {})
         )
 
         self.assertEqual(patient_dob, replacement_data.tags_to_fill["PatientBirthDate"])
@@ -89,7 +89,7 @@ class TestAdjustDICOMDataset(unittest.TestCase):
         )
 
         replacement_data = fill_dcm.update_data(
-            fill_dcm.InputTags(
+            parse_argument.InputTags(
                 {"InstanceCreationDate": None, "ReferringPhysicianName": None}, {}
             )
         )
@@ -114,7 +114,7 @@ class TestAdjustDICOMDataset(unittest.TestCase):
         self.assertEqual(ds["ReferringPhysicianName"].VM, 0)
 
         replacement_data = fill_dcm.update_data(
-            fill_dcm.InputTags(
+            parse_argument.InputTags(
                 {"InstanceCreationDate": None, "ReferringPhysicianName": None}, {}
             )
         )
@@ -136,7 +136,7 @@ class TestAdjustDICOMDataset(unittest.TestCase):
         )
 
         replacement_data = fill_dcm.update_data(
-            fill_dcm.InputTags(
+            parse_argument.InputTags(
                 {
                     "InstanceCreationDate": "19980712",
                     "ReferringPhysicianName": "Zidane^Zinedine",
@@ -162,7 +162,7 @@ class TestAdjustDICOMDataset(unittest.TestCase):
         )
 
         replacement_data = fill_dcm.update_data(
-            fill_dcm.InputTags(
+            parse_argument.InputTags(
                 {},
                 {
                     "InstanceCreationDate": "19980712",

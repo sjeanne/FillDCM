@@ -4,7 +4,7 @@
 import unittest
 from copy import deepcopy
 
-from filldcm import fill_dcm
+from filldcm import fill_dcm, parse_argument
 
 
 class TestDataUpdate(unittest.TestCase):
@@ -12,7 +12,7 @@ class TestDataUpdate(unittest.TestCase):
 
     def test_update_data_values(self):
         """Call to update_data() with input values. Only 'None' tags are updated with  a random value"""
-        input_values = fill_dcm.InputTags(
+        input_values = parse_argument.InputTags(
             {
                 "PatientName": "patient^name^complicated",
                 "PatientID": "1234567890AZERTY",
@@ -45,7 +45,7 @@ class TestDataUpdate(unittest.TestCase):
 
     def test_tags_to_overwrite_not_updated(self):
         """Tags to overwrite are not updated"""
-        input_values = fill_dcm.InputTags(
+        input_values = parse_argument.InputTags(
             {},
             {
                 "PatientID": "1234567890AZERTY",
@@ -68,64 +68,64 @@ class TestDataUpdate(unittest.TestCase):
 
     def test_update_data_with_empty_input(self):
         """Empty structure is passed, no exception are raised."""
-        fill_dcm.update_data(fill_dcm.InputTags())
+        fill_dcm.update_data(parse_argument.InputTags())
 
     def test_update_data_vr_as(self):
         """AS VR is managed, update_data() creates a value for AG tags"""
-        input_values = fill_dcm.InputTags({"PatientAge": None}, {})
+        input_values = parse_argument.InputTags({"PatientAge": None}, {})
         fill_dcm.update_data(input_values)
         self.assertIsNotNone(input_values.tags_to_fill["PatientAge"])
 
     def test_update_data_vr_ds(self):
         """DS VR is managed, update_data() creates a value for DS tags"""
-        input_values = fill_dcm.InputTags({"PixelSpacing": None}, {})
+        input_values = parse_argument.InputTags({"PixelSpacing": None}, {})
         fill_dcm.update_data(input_values)
         self.assertIsNotNone(input_values.tags_to_fill["PixelSpacing"])
 
     def test_update_data_vr_dt(self):
         """DT VR is managed, update_data() creates a value for DT tags"""
-        input_values = fill_dcm.InputTags({"AcquisitionDateTime": None}, {})
+        input_values = parse_argument.InputTags({"AcquisitionDateTime": None}, {})
         fill_dcm.update_data(input_values)
         self.assertIsNotNone(input_values.tags_to_fill["AcquisitionDateTime"])
 
     def test_update_data_vr_is(self):
         """IS VR is managed, update_data() creates a value for IS tags"""
-        input_values = fill_dcm.InputTags({"SeriesNumber": None}, {})
+        input_values = parse_argument.InputTags({"SeriesNumber": None}, {})
         fill_dcm.update_data(input_values)
         self.assertIsNotNone(input_values.tags_to_fill["SeriesNumber"])
 
     def test_update_data_vr_lt(self):
         """LT VR is managed, update_data() creates a value for LT tags"""
-        input_values = fill_dcm.InputTags({"ImageComments": None}, {})
+        input_values = parse_argument.InputTags({"ImageComments": None}, {})
         fill_dcm.update_data(input_values)
         self.assertIsNotNone(input_values.tags_to_fill["ImageComments"])
 
     def test_update_data_vr_sh(self):
         """SH VR is managed, update_data() creates a value for SH tags"""
-        input_values = fill_dcm.InputTags({"StationName": None}, {})
+        input_values = parse_argument.InputTags({"StationName": None}, {})
         fill_dcm.update_data(input_values)
         self.assertIsNotNone(input_values.tags_to_fill["StationName"])
 
     def test_update_data_vr_st(self):
         """ST VR is managed, update_data() creates a value for ST tags"""
-        input_values = fill_dcm.InputTags({"InstitutionAddress": None}, {})
+        input_values = parse_argument.InputTags({"InstitutionAddress": None}, {})
         fill_dcm.update_data(input_values)
         self.assertIsNotNone(input_values.tags_to_fill["InstitutionAddress"])
 
     def test_update_data_throw_vr_tm(self):
         """TM VR is managed, update_data() creates a value for TM tags"""
-        input_values = fill_dcm.InputTags({"SeriesTime": None}, {})
+        input_values = parse_argument.InputTags({"SeriesTime": None}, {})
         fill_dcm.update_data(input_values)
         self.assertIsNotNone(input_values.tags_to_fill["SeriesTime"])
 
     def test_update_data_throw_vr_ui(self):
         """UI VR is managed, update_data() creates a value for UI tags"""
-        input_values = fill_dcm.InputTags({"DeviceUID": None}, {})
+        input_values = parse_argument.InputTags({"DeviceUID": None}, {})
         fill_dcm.update_data(input_values)
         self.assertIsNotNone(input_values.tags_to_fill["DeviceUID"])
 
     def test_update_data_throw_vr_us(self):
         """US VR is managed, update_data() creates a value for US tags"""
-        input_values = fill_dcm.InputTags({"Rows": None}, {})
+        input_values = parse_argument.InputTags({"Rows": None}, {})
         fill_dcm.update_data(input_values)
         self.assertIsNotNone(input_values.tags_to_fill["Rows"])

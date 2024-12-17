@@ -8,47 +8,14 @@ from typing import Dict, List, Tuple
 
 from pydicom import datadict, dcmread, errors
 
-from filldcm import vr_generators
+from filldcm import parse_argument, vr_generators
 
 
 class InvalidParameter(Exception):
     """Exception to handle CLI parameter errors"""
 
 
-class InputTags:
-    """Contains all DICOM tags to fill or to replace"""
-
-    def __init__(
-        self,
-        tags_to_fill: Dict[str, str] = None,
-        tags_to_replace: Dict[str, str] = None,
-    ):
-        """InputTags constructor
-
-        Args:
-            tags_to_fill (dict, optional): Dictionary of tag to fill. Defaults to None.
-            tags_to_replace (dict, optional): Dictionary of tag to replace. Defaults to None.
-        """
-        self.tags_to_fill: Dict[str, str] = (
-            tags_to_fill if tags_to_fill is not None else {}
-        )
-        self.tags_to_replace: Dict[str, str] = (
-            tags_to_replace if tags_to_replace is not None else {}
-        )
-
-
-class Options:
-    """Contains application options"""
-
-    def __init__(self, overwrite_output_file: bool = False):
-        """Options constructor
-        Args:
-            overwrite_output_file (bool, optional): Set to True to overwrite DICOM input files. Defaults to False.
-        """
-        self.overwrite_output_file: bool = overwrite_output_file
-
-
-def update_data(input_values: InputTags) -> InputTags:
+def update_data(input_values: parse_argument.InputTags) -> parse_argument.InputTags:
     """Define a value to each tag without. The generated value matches tag's VR.
     If a tag has a defined value, it is not updated.
     Parameters:
@@ -91,7 +58,7 @@ def update_data(input_values: InputTags) -> InputTags:
     return input_values
 
 
-def adjust_dicom_dataset(dataset, input_tags: InputTags):
+def adjust_dicom_dataset(dataset, input_tags: parse_argument.InputTags):
     """Replace in the dataset empty or missing tags by replacement data
     Parameters:
         dataset (Dataset) Dataset to adjust
@@ -130,7 +97,9 @@ def output_filepath(
 
 
 def adjust_dicom_files(
-    files: List[str], input_tags: InputTags, options: Options
+    files: List[str],
+    input_tags: parse_argument.InputTags,
+    options: parse_argument.Options,
 ) -> None:
     """Adjust DICOM files according to rules and values passed as input
 
@@ -152,106 +121,6 @@ def adjust_dicom_files(
 
         adjust_dicom_dataset(dataset, input_tags)
         dataset.save_as(output_filepath(file, options.overwrite_output_file))
-
-
-def tag_is_in_dicom_dictionary(tag: str) -> bool:
-    """Indicated if a tag, by its string value, exist in the DICOM dictionary
-
-    Args:
-        tag (str): Tag name to verify
-
-    Returns:
-        bool: True if tag exists, otherwise False
-    """
-    return datadict.dictionary_has_tag(tag)
-
-
-def verify_input_tags(input_args: InputTags) -> None:
-    """Verify validity of inputs arguments. Rules:
-        - a tag can't be in both list (tag and tag to replace)
-        - a tag to replace must have a value (e.g "tag=value")
-        - at least one tag shall be provided
-        - tags of both lists must be a valid tag from DICOM dictionary
-    Exceptions:
-        InvalidParameter if a condition is not matched
-    """
-    # At least one tag shall be defined
-    if (
-        len(input_args.tags_to_fill.keys()) == 0
-        and len(input_args.tags_to_replace.keys()) == 0
-    ):
-        raise InvalidParameter("At least one tag shall be defined")
-
-    # Duplication between the two lists of tags
-    # and Tags to replace must have a value
-    # and Tags to replace shall be in DICOM dictionary
-    for tag_to_replace in input_args.tags_to_replace:
-        if input_args.tags_to_replace[tag_to_replace] is None:
-            raise InvalidParameter(f"Tag {tag_to_replace} must have value.")
-        if tag_to_replace in input_args.tags_to_fill:
-            raise InvalidParameter(
-                f"Tag {tag_to_replace} is duplicated. A tag can only be defined once"
-            )
-        if not tag_is_in_dicom_dictionary(tag_to_replace):
-            raise InvalidParameter(
-                f"Tag {tag_to_replace} is not a valid tag from DICOM dictionary"
-            )
-
-    # tags shall be in DICOM dictionary
-    for tag in input_args.tags_to_fill:
-        if not tag_is_in_dicom_dictionary(tag):
-            raise InvalidParameter(
-                f"Tag {tag} is not a valid tag from DICOM dictionary"
-            )
-
-    # TODO verify that values passed are correct according to  tag's VR.
-    # Add an option to enable/disable this check
-
-
-# TODO add unit test of parse_arguments()
-def parse_arguments(input_args: argparse.Namespace) -> Tuple[InputTags, Options]:
-    """Parse input arguments and return two dictionaries of tag to fill and tag_to_replace and also options
-
-    Args:
-        input_args (argparse.Namespace): CLI parameters
-    Returns:
-        Tuple[InputTags, Options]: InputTags and options parsed from CLI parameters
-    """
-    parsed_tags = InputTags()
-
-    # tags to fill
-    if "fill" in input_args and input_args.fill is not None:
-        for raw_tag in input_args.fill:
-            splitted_tag = raw_tag.split("=", 1)
-            parsed_tags.tags_to_fill[splitted_tag[0]] = (
-                None if len(splitted_tag) == 1 else splitted_tag[1]
-            )
-
-    # tags to replace
-    if "replace" in input_args and input_args.replace is not None:
-        for raw_tag_to_replace in input_args.replace:
-            splitted_tag = raw_tag_to_replace.split("=", 1)
-            parsed_tags.tags_to_replace[splitted_tag[0]] = (
-                None if len(splitted_tag) == 1 else splitted_tag[1]
-            )
-
-    # TODO: excluse JSON with regular inputs
-    if "json_path" in input_args and input_args.json_path is not None:
-        try:
-            with open(input_args.json_path, "r") as json_file:
-                parsed_json = json.load(json_file)
-                parsed_tags = InputTags(
-                    parsed_json.get("tags_to_fill", None),
-                    parsed_json.get("tags_to_replace", None),
-                )
-        except Exception as error:
-            raise InvalidParameter(
-                f"Error while reading JSON input. File: {input_args.json_path}. Error:{error}"
-            )
-
-    options = Options(input_args.overwrite_file)
-
-    return (parsed_tags, options)
 
 
 def fill_dcm_executable() -> None:
@@ -294,14 +163,10 @@ def fill_dcm_executable() -> None:
 
     input_args: argparse.Namespace = command_line.parse_args()
     try:
-        input_tags, options = parse_arguments(input_args)
-        verify_input_tags(input_tags)
-    except InvalidParameter as invalid_parameter:
-        command_line.error(f"Invalid parameter: {invalid_parameter}")
+        input_tags, options = parse_argument.parse(input_args)
+        parse_argument.verify_input_tags(input_tags)
+    except parse_argument.InvalidArgument as invalid_argument:
+        command_line.error(f"Invalid argument: {invalid_argument}")
 
     # TODO: catch exceptions
     adjust_dicom_files(input_args.files, input_tags, options)
-
-
-if __name__ == "__main__":
-    fill_dcm_executable()
