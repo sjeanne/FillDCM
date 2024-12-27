@@ -6,8 +6,8 @@ FillDCM is the DICOM tool you need if you have to:
 
 Tags are specified by their names as string, following DICOM dictionary: PatientID, AcquisitionData, etc.
 
-```sh
-> python filldcm --help
+```bash
+python filldcm --help
 usage: FillDCM [-h] [-f --fill-tag] [-r --replace-tag] [-j --json] [-ov] dcm_file [dcm_file ...]
 
 Tool to fill missing or empty DICOM tags or to replace others.
@@ -27,17 +27,17 @@ options:
 FillDCM relies on Poetry.
 
 To install dependencies:
-```sh
+```bash
 poetry install
 ```
 
 To run FillDCM:
-```sh
+```bash
 poetry run python filldcm.py ...
 ```
 
 To run unit tests:
-```sh
+```bash
 poetry run python -m unittest
 ```
 
@@ -46,7 +46,7 @@ poetry run python -m unittest
 ## Fill a list of empty/missing tags
 
 You want patient's data to not be empty or missing and don't expect a particular value:
-```sh
+```bash
 python filldcm.py 
     --fill-tag PatientName 
     --fill-tag PatientID 
@@ -59,7 +59,7 @@ python filldcm.py
 ## Overwrite some particular tags
 
 You want to overwrite all tags related to the Institution
-```sh
+```bash
 python filldcm.py 
     --replace-tag InstitutionName="Github Hospital" 
     --replace-tag InstitutionAddress="42 Git street, Github town" 
@@ -84,7 +84,7 @@ You can use a JSON file and pass it to fillDCM instead of defining tags one by o
 }
 ```
 
-```sh
+```bash
 python filldcm.py 
     --json ./tags.json 
     <list of dcm files>
