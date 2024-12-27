@@ -19,8 +19,26 @@ options:
   -h, --help            show this help message and exit
   -f --fill-tag         DICOM tag to fill if missing or if its value is empty or undefined. A value to fill can be specified. Tag specification: <Tag name as a string>[=<value>]
   -r --replace-tag      DICOM tag to replace with the specified value. If the tag doesn't exist, it is appended to the dataset. Tags specification: <Tag name as a string>=<value>
-  -j --json             Specify a JSON file as input. This JSON file has a list of tags to fill or to replace.
+  -j --json             Specify a JSON file as input. This JSON file has a list of tags to fill or to replace. The expected structure for the JSON is: {"tags_to_fill":{}, "tags_to_replace":{}} with both attribute being dict of tags with value (or null)
   -ov, --overwrite-file Overwrite the original file. By default "_generated" is appended the the original filename and a new file is created.
+```
+
+# How to use it
+FillDCM relies on Poetry.
+
+To install dependencies:
+```sh
+poetry install
+```
+
+To run FillDCM:
+```sh
+poetry run python filldcm.py ...
+```
+
+To run unit tests:
+```sh
+poetry run python -m unittest
 ```
 
 # Examples
@@ -29,24 +47,45 @@ options:
 
 You want patient's data to not be empty or missing and don't expect a particular value:
 ```sh
-> python filldcm.py 
+python filldcm.py 
     --fill-tag PatientName 
     --fill-tag PatientID 
     --fill-tag PatientBirthDate 
     --fill-tag PatientSex
     --fill-tag PatientWeight 
     <list of dcm files>
-
 ```
 
 ## Overwrite some particular tags
 
 You want to overwrite all tags related to the Institution
 ```sh
-> python filldcm.py 
+python filldcm.py 
     --replace-tag InstitutionName="Github Hospital" 
     --replace-tag InstitutionAddress="42 Git street, Github town" 
     <list of dcm files>
-
 ```
 
+## Use a JSON file
+
+You can use a JSON file and pass it to fillDCM instead of defining tags one by one in the command line.
+```json
+{
+  "tags_to_fill":{
+    "PatientName":"Github^Octocat",
+    "PatientSex":"O",
+    "PatientID":null,
+    "PatientBirthDate":null,
+  },
+  "tags_to_replace":{
+    "InstitutionName":"Github Hospital",
+    "InstitutionAddress":"42 Git street, Github town",
+  },
+}
+```
+
+```sh
+python filldcm.py 
+    --json ./tags.json 
+    <list of dcm files>
+```

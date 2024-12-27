@@ -150,7 +150,7 @@ def fill_dcm_executable() -> None:
         "-j",
         metavar="--json",
         dest="json_path",
-        help="Specify a JSON file as input. This JSON file has a list of tags to fill or to replace.",
+        help='Specify a JSON file as input. This JSON file has a list of tags to fill or to replace. The expected structure for the JSON is: {"tags_to_fill":{}, "tags_to_replace":{}} with both attribute being dict of tags with value (or null)',
     )
     command_line.add_argument(
         "-ov",
