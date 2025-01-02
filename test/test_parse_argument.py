@@ -311,3 +311,34 @@ class TestParseArgument(unittest.TestCase):
         args = Mock(fill=None, replace=None, json_path=None, overwrite_file=None)
         (_, options) = parse_argument.parse(args)
         self.assertFalse(options.overwrite_output_file)
+
+    def test_parse_option_verbose_true(self):
+        """parse_argument.parse() shall parse verbose option if True"""
+        args = Mock(fill=None, replace=None, json_path=None, verbose_log=True)
+        (_, options) = parse_argument.parse(args)
+        self.assertTrue(options.verbose_log)
+
+    def test_parse_option_verbose_false(self):
+        """parse_argument.parse() shall parse verbose option if False"""
+        args = Mock(fill=None, replace=None, json_path=None, verbose_log=False)
+        (_, options) = parse_argument.parse(args)
+        self.assertFalse(options.verbose_log)
+
+    def test_parse_option_verbose_none(self):
+        """parse_argument.parse() shall parse verbose option if None"""
+        args = Mock(fill=None, replace=None, json_path=None, verbose_log=None)
+        (_, options) = parse_argument.parse(args)
+        self.assertFalse(options.verbose_log)
+
+    def test_parse_option_verbose_and_overwrite_true(self):
+        """parse_argument.parse() shall parse verbose and overwrite option if True"""
+        args = Mock(
+            fill=None,
+            replace=None,
+            json_path=None,
+            verbose_log=True,
+            overwrite_file=True,
+        )
+        (_, options) = parse_argument.parse(args)
+        self.assertTrue(options.verbose_log)
+        self.assertTrue(options.overwrite_output_file)

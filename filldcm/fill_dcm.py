@@ -3,12 +3,15 @@
 
 import argparse
 import json
+import logging
 from pathlib import Path
 from typing import Dict, List, Tuple
 
 from pydicom import datadict, dcmread, errors
 
 from filldcm import parse_argument, vr_generators
+
+logger = logging.getLogger()
 
 
 class InvalidParameter(Exception):
@@ -68,15 +71,19 @@ def adjust_dicom_dataset(dataset, input_tags: parse_argument.InputTags):
     for dcm_tag, tag_value in input_tags.tags_to_fill.items():
         if not dcm_tag in dataset:
             dataset.add_new(dcm_tag, datadict.dictionary_VR(dcm_tag), tag_value)
+            logger.info(f"Add {dcm_tag}:{tag_value}")
         elif dataset[dcm_tag].VM == 0:
             dataset[dcm_tag].value = tag_value
+            logger.info(f"Update {dcm_tag}:{tag_value}")
 
     # Replace or insert all specified tags
     for dcm_tag, tag_value in input_tags.tags_to_replace.items():
         if not dcm_tag in dataset:
             dataset.add_new(dcm_tag, datadict.dictionary_VR(dcm_tag), tag_value)
+            logger.info(f"Add {dcm_tag}:{tag_value}")
         else:
             dataset[dcm_tag].value = tag_value
+            logger.info(f"Update {dcm_tag}:{tag_value}")
 
 
 def output_filepath(
@@ -93,6 +100,7 @@ def output_filepath(
         output_file_path = (
             f"{path_to_file.parent}/{path_to_file.stem}_modified{path_to_file.suffix}"
         )
+        logger.info(f"Output file: {output_file_path}")
     return output_file_path
 
 
@@ -112,19 +120,25 @@ def adjust_dicom_files(
     update_data(input_tags)
 
     for file in files:
-        print(f"Work on file: {file}")
+        logger.info(f"Work on file: {file}")
         try:
             dataset = dcmread(file)
-        except errors.InvalidDicomError:
-            print(f"Invalid file to read: {file}")
+        except (errors.InvalidDicomError, Exception) as error:
+            logger.error(f"Invalid file to read: {file}: {error}")
             continue
 
         adjust_dicom_dataset(dataset, input_tags)
-        dataset.save_as(output_filepath(file, options.overwrite_output_file))
+        try:
+            output_file = output_filepath(file, options.overwrite_output_file)
+            dataset.save_as(output_file)
+        except Exception as error:
+            logger.error(f"Can't write the DICOM file: {output_file}: {error}")
+            continue
 
 
 def fill_dcm_executable() -> None:
     """Main function that does the job"""
+
     command_line = argparse.ArgumentParser(
         prog="FillDCM",
         description="Tool to fill missing or empty DICOM tags or to replace others.",
@@ -159,14 +173,28 @@ def fill_dcm_executable() -> None:
         help='Overwrite the original file. By default "_generated" is appended the the original filename and a new file is created.',
     )
 
+    command_line.add_argument(
+        "-v",
+        "--verbose",
+        dest="verbose_log",
+        action="store_true",
+        help="Enable verbose mode. More logs output.",
+    )
+
     # TODO allow to pass tag as tag "0010,0010"
 
     input_args: argparse.Namespace = command_line.parse_args()
     try:
         input_tags, options = parse_argument.parse(input_args)
-        parse_argument.verify_input_tags(input_tags)
+        logging.basicConfig(
+            level=logging.DEBUG if options.verbose_log else logging.INFO,
+            format="%(levelname)s - %(message)s",
+        )
     except parse_argument.InvalidArgument as invalid_argument:
         command_line.error(f"Invalid argument: {invalid_argument}")
 
-    # TODO: catch exceptions
-    adjust_dicom_files(input_args.files, input_tags, options)
+    try:
+        parse_argument.verify_input_tags(input_tags)
+        adjust_dicom_files(input_args.files, input_tags, options)
+    except Exception as error:
+        logger.error(f"Can't process an error encountered: {error}")

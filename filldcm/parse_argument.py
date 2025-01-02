@@ -34,12 +34,14 @@ class InputTags:
 class Options:
     """Contains application options"""
 
-    def __init__(self, overwrite_output_file: bool = False):
+    def __init__(self, overwrite_output_file: bool = False, verbose_log: bool = False):
         """Options constructor
         Args:
             overwrite_output_file (bool, optional): Set to True to overwrite DICOM input files. Defaults to False.
+            verbose_log (bool, optional): Set to True to enable verbose mode. Defaults to False.
         """
         self.overwrite_output_file: bool = overwrite_output_file
+        self.verbose_log: bool = verbose_log
 
 
 def tag_is_in_dicom_dictionary(tag: str) -> bool:
@@ -94,7 +96,6 @@ def verify_input_tags(input_args: InputTags) -> None:
     # Add an option to enable/disable this check
 
 
-# TODO add unit test of parse_arguments()
 def parse(input_args: Namespace) -> Tuple[InputTags, Options]:
     """Parse input arguments and return a tuple of InputTags filled according to input parameters and Options.
         InputTags is filled according to parameter.
@@ -138,6 +139,6 @@ def parse(input_args: Namespace) -> Tuple[InputTags, Options]:
                 None if len(splitted_tag) == 1 else splitted_tag[1]
             )
 
-    options = Options(input_args.overwrite_file)
+    options = Options(input_args.overwrite_file, input_args.verbose_log)
 
     return (input_tags, options)
