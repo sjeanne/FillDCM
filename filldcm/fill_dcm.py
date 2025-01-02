@@ -148,21 +148,21 @@ def fill_dcm_executable() -> None:
     )
     command_line.add_argument(
         "-f",
-        metavar="--fill-tag",
+        "--fill-tag",
         action="append",
         dest="fill",
         help="DICOM tag to fill if missing or if its value is empty or undefined. A value to fill can be specified. Tag specification: <Tag name as a string>[=<value>]",
     )
     command_line.add_argument(
         "-r",
-        metavar="--replace-tag",
+        "--replace-tag",
         action="append",
         dest="replace",
         help="DICOM tag to replace with the specified value. If the tag doesn't exist, it is appended to the dataset. Tags specification: <Tag name as a string>=<value>",
     )
     command_line.add_argument(
         "-j",
-        metavar="--json",
+        "--json",
         dest="json_path",
         help='Specify a JSON file as input. This JSON file has a list of tags to fill or to replace. The expected structure for the JSON is: {"tags_to_fill":{}, "tags_to_replace":{}} with both attribute being dict of tags with value (or null)',
     )
