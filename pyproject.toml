@@ -13,10 +13,14 @@ pydicom = "^2.4.4"
 [tool.poetry.group.dev.dependencies]
 black = "^24.10.0"
 isort = "^5.13.2"
+pre-commit = "^4.0.1"
 
 [tool.poetry.group.installer.dependencies]
 pyinstaller = "^6.11.1"
 
+[tool.black]
+line-length = 150
+target-version = ['py310']
 
 [tool.isort]
 profile = "black"

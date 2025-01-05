@@ -86,9 +86,7 @@ def adjust_dicom_dataset(dataset, input_tags: parse_argument.InputTags):
             logger.info(f"Update {dcm_tag}:{tag_value}")
 
 
-def output_filepath(
-    original_file_path: str, overwrite_output_file: bool = False
-) -> str:
+def output_filepath(original_file_path: str, overwrite_output_file: bool = False) -> str:
     """Generate the output filepath. If no overwrite, '_modified' is appended to the input. Otherwise, the input is returned
     Args:
         original_file_path (string) Path to the input file
@@ -97,9 +95,7 @@ def output_filepath(
     output_file_path = original_file_path
     if not overwrite_output_file:
         path_to_file = Path(original_file_path)
-        output_file_path = (
-            f"{path_to_file.parent}/{path_to_file.stem}_modified{path_to_file.suffix}"
-        )
+        output_file_path = f"{path_to_file.parent}/{path_to_file.stem}_modified{path_to_file.suffix}"
         logger.info(f"Output file: {output_file_path}")
     return output_file_path
 
@@ -143,9 +139,7 @@ def fill_dcm_executable() -> None:
         prog="FillDCM",
         description="Tool to fill missing or empty DICOM tags or to replace others.",
     )
-    command_line.add_argument(
-        "files", metavar="dcm_file", nargs="+", help="List of DICOM files to edit"
-    )
+    command_line.add_argument("files", metavar="dcm_file", nargs="+", help="List of DICOM files to edit")
     command_line.add_argument(
         "-f",
         "--fill-tag",

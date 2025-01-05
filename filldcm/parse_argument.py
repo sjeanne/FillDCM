@@ -23,12 +23,8 @@ class InputTags:
             tags_to_fill (dict, optional): Dictionary of tag to fill. Defaults to None.
             tags_to_replace (dict, optional): Dictionary of tag to replace. Defaults to None.
         """
-        self.tags_to_fill: Dict[str, str] = (
-            tags_to_fill if tags_to_fill is not None else {}
-        )
-        self.tags_to_replace: Dict[str, str] = (
-            tags_to_replace if tags_to_replace is not None else {}
-        )
+        self.tags_to_fill: Dict[str, str] = tags_to_fill if tags_to_fill is not None else {}
+        self.tags_to_replace: Dict[str, str] = tags_to_replace if tags_to_replace is not None else {}
 
 
 class Options:
@@ -66,10 +62,7 @@ def verify_input_tags(input_args: InputTags) -> None:
         InvalidArgument if a condition is not matched
     """
     # At least one tag shall be defined
-    if (
-        len(input_args.tags_to_fill.keys()) == 0
-        and len(input_args.tags_to_replace.keys()) == 0
-    ):
+    if len(input_args.tags_to_fill.keys()) == 0 and len(input_args.tags_to_replace.keys()) == 0:
         raise InvalidArgument("At least one tag shall be defined")
 
     # Duplication between the two lists of tags
@@ -79,13 +72,9 @@ def verify_input_tags(input_args: InputTags) -> None:
         if input_args.tags_to_replace[tag_to_replace] is None:
             raise InvalidArgument(f"Tag {tag_to_replace} must have value.")
         if tag_to_replace in input_args.tags_to_fill:
-            raise InvalidArgument(
-                f"Tag {tag_to_replace} is duplicated. A tag can only be defined once"
-            )
+            raise InvalidArgument(f"Tag {tag_to_replace} is duplicated. A tag can only be defined once")
         if not tag_is_in_dicom_dictionary(tag_to_replace):
-            raise InvalidArgument(
-                f"Tag {tag_to_replace} is not a valid tag from DICOM dictionary"
-            )
+            raise InvalidArgument(f"Tag {tag_to_replace} is not a valid tag from DICOM dictionary")
 
     # tags shall be in DICOM dictionary
     for tag in input_args.tags_to_fill:
@@ -119,25 +108,19 @@ def parse(input_args: Namespace) -> Tuple[InputTags, Options]:
                 if "tags_to_replace" in parsed_json:
                     input_tags.tags_to_replace.update(parsed_json["tags_to_replace"])
         except Exception as error:
-            raise InvalidArgument(
-                f"Error while reading JSON input. File: {input_args.json_path}. Error:{error}"
-            )
+            raise InvalidArgument(f"Error while reading JSON input. File: {input_args.json_path}. Error:{error}")
 
     # tags to fill
     if input_args.fill is not None:
         for raw_tag in input_args.fill:
             splitted_tag = raw_tag.split("=", 1)
-            input_tags.tags_to_fill[splitted_tag[0]] = (
-                None if len(splitted_tag) == 1 else splitted_tag[1]
-            )
+            input_tags.tags_to_fill[splitted_tag[0]] = None if len(splitted_tag) == 1 else splitted_tag[1]
 
     # tags to replace
     if input_args.replace is not None:
         for raw_tag_to_replace in input_args.replace:
             splitted_tag = raw_tag_to_replace.split("=", 1)
-            input_tags.tags_to_replace[splitted_tag[0]] = (
-                None if len(splitted_tag) == 1 else splitted_tag[1]
-            )
+            input_tags.tags_to_replace[splitted_tag[0]] = None if len(splitted_tag) == 1 else splitted_tag[1]
 
     options = Options(input_args.overwrite_file, input_args.verbose_log)
 

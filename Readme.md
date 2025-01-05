@@ -92,6 +92,14 @@ To run unit tests:
 poetry run python -m unittest
 ```
 
+## Setup style tools
+Black and isort are used to format the code. To enforce their usage, pre-commit is used as well. The latter shall be run once to install its git's hook:
+```bash
+poetry run pre-commit install
+```
+From now, pre-commit's hook is run at each commit and checks if Black and isort are correctly applied
+
+
 ## Build portable executable
 FillDCM uses pyinstaller to build an executable. This is useful to share the application, especially to non-developer.
 To compile FillDCM executable, follow these steps:

@@ -16,14 +16,10 @@ class TestParseArgument(unittest.TestCase):
         )
 
         # Shall not throw
-        parse_argument.verify_input_tags(
-            parse_argument.InputTags({}, {"PatientID": "Value"})
-        )
+        parse_argument.verify_input_tags(parse_argument.InputTags({}, {"PatientID": "Value"}))
 
         # Shall not throw
-        parse_argument.verify_input_tags(
-            parse_argument.InputTags({"SeriesDate": None}, {})
-        )
+        parse_argument.verify_input_tags(parse_argument.InputTags({"SeriesDate": None}, {}))
 
     def test_verify_input_tags_tag_no_duplicate(self):
         """parse_argument.verify_input_tags() shall throw if tags are duplicated between the two lists"""
@@ -51,9 +47,7 @@ class TestParseArgument(unittest.TestCase):
         )
 
         # shall not throw
-        parse_argument.verify_input_tags(
-            parse_argument.InputTags({"SeriesTime": None}, {})
-        )
+        parse_argument.verify_input_tags(parse_argument.InputTags({"SeriesTime": None}, {}))
 
     def test_verify_input_tags_valid_dicom_tags(self):
         """If tag is not in DICOM dictionary an exception is raised"""
@@ -70,35 +64,23 @@ class TestParseArgument(unittest.TestCase):
         self.assertRaises(
             parse_argument.InvalidArgument,
             parse_argument.verify_input_tags,
-            parse_argument.InputTags(
-                {"PatientId": None, "PatientNotExistTag": None}, {}
-            ),
+            parse_argument.InputTags({"PatientId": None, "PatientNotExistTag": None}, {}),
         )
         self.assertRaises(
             parse_argument.InvalidArgument,
             parse_argument.verify_input_tags,
-            parse_argument.InputTags(
-                {}, {"PatientId": None, "PatientNotExistTag": None}
-            ),
+            parse_argument.InputTags({}, {"PatientId": None, "PatientNotExistTag": None}),
         )
 
     def test_verify_input_tags_valid(self):
         """parse_argument.verify_input_tags() shall not throw with valid inputs"""
-        parse_argument.verify_input_tags(
-            parse_argument.InputTags(
-                {"PixelSpacing": None, "PatientName": "Raymond"}, {}
-            )
-        )
-        parse_argument.verify_input_tags(
-            parse_argument.InputTags({}, {"PatientID": "42", "PatientName": "Raymond"})
-        )
+        parse_argument.verify_input_tags(parse_argument.InputTags({"PixelSpacing": None, "PatientName": "Raymond"}, {}))
+        parse_argument.verify_input_tags(parse_argument.InputTags({}, {"PatientID": "42", "PatientName": "Raymond"}))
 
     def test_parse_with_tag_to_fill_one_tag_with_value(self):
         """parse_argument.parse() shall parse tag to fill: one tag with value"""
         tag_value1 = ("PatientName", "Wayne^Bruce")
-        args = Mock(
-            fill=[f"{tag_value1[0]}={tag_value1[1]}"], replace=None, json_path=None
-        )
+        args = Mock(fill=[f"{tag_value1[0]}={tag_value1[1]}"], replace=None, json_path=None)
         (input_tags, _) = parse_argument.parse(args)
         self.assertEqual(input_tags.tags_to_fill[tag_value1[0]], tag_value1[1])
         self.assertEqual(len(input_tags.tags_to_replace), 0)
@@ -136,9 +118,7 @@ class TestParseArgument(unittest.TestCase):
         tag1 = "PatientID"
         tag2 = "PatientSex"
         tag3 = "SeriesTime"
-        args = Mock(
-            fill=[f"{tag1}", f"{tag2}", f"{tag3}"], replace=None, json_path=None
-        )
+        args = Mock(fill=[f"{tag1}", f"{tag2}", f"{tag3}"], replace=None, json_path=None)
         (input_tags, _) = parse_argument.parse(args)
         self.assertEqual(input_tags.tags_to_fill[tag1], None)
         self.assertEqual(input_tags.tags_to_fill[tag2], None)

@@ -24,9 +24,7 @@ class TestAdjustDICOMDataset(unittest.TestCase):
     def test_missing_patient_name(self):
         """Input dataset has no PatientName and PatientName is a tag to fill. Adjusted dataset shall have the replacement PatientName"""
         ds = self.load_dataset(DICOM_DATASET_JSON, tags_to_remove=["00100010"])
-        replacement_data = fill_dcm.update_data(
-            parse_argument.InputTags({"PatientName": None}, {})
-        )
+        replacement_data = fill_dcm.update_data(parse_argument.InputTags({"PatientName": None}, {}))
 
         self.assertFalse("PatientName" in ds)
         fill_dcm.adjust_dicom_dataset(ds, replacement_data)
@@ -39,9 +37,7 @@ class TestAdjustDICOMDataset(unittest.TestCase):
         ds = self.load_dataset(DICOM_DATASET_JSON, tags_to_remove=["00100010"])
 
         patient_name = "Hampton^Fredrick"
-        replacement_data = fill_dcm.update_data(
-            parse_argument.InputTags({"PatientName": patient_name}, {})
-        )
+        replacement_data = fill_dcm.update_data(parse_argument.InputTags({"PatientName": patient_name}, {}))
 
         self.assertEqual(patient_name, replacement_data.tags_to_fill["PatientName"])
         self.assertFalse("PatientName" in ds)
@@ -54,45 +50,31 @@ class TestAdjustDICOMDataset(unittest.TestCase):
         """Input dataset has no PatientBirthDate and PatientBirthDate is a tag to fill. Adjusted dataset shall have the replacement PatientBirthDate"""
         ds = self.load_dataset(DICOM_DATASET_JSON, tags_to_remove=["00100030"])
 
-        replacement_data = fill_dcm.update_data(
-            parse_argument.InputTags({"PatientBirthDate": None}, {})
-        )
+        replacement_data = fill_dcm.update_data(parse_argument.InputTags({"PatientBirthDate": None}, {}))
 
         self.assertFalse("PatientBirthDate" in ds)
         fill_dcm.adjust_dicom_dataset(ds, replacement_data)
         self.assertTrue("PatientBirthDate" in ds)
-        self.assertEqual(
-            ds.PatientBirthDate, replacement_data.tags_to_fill["PatientBirthDate"]
-        )
+        self.assertEqual(ds.PatientBirthDate, replacement_data.tags_to_fill["PatientBirthDate"])
 
     def test_missing_birth_date_specified(self):
         """Input dataset has no PatientBirthDate and PatientBirthDate is a tag to fill with specified value. Adjusted dataset shall have the specified PatientBirthDate"""
         ds = self.load_dataset(DICOM_DATASET_JSON, tags_to_remove=["00100030"])
 
         patient_dob = "19480830"
-        replacement_data = fill_dcm.update_data(
-            parse_argument.InputTags({"PatientBirthDate": patient_dob}, {})
-        )
+        replacement_data = fill_dcm.update_data(parse_argument.InputTags({"PatientBirthDate": patient_dob}, {}))
 
         self.assertEqual(patient_dob, replacement_data.tags_to_fill["PatientBirthDate"])
         self.assertFalse("PatientBirthDate" in ds)
         fill_dcm.adjust_dicom_dataset(ds, replacement_data)
         self.assertTrue("PatientBirthDate" in ds)
-        self.assertEqual(
-            ds.PatientBirthDate, replacement_data.tags_to_fill["PatientBirthDate"]
-        )
+        self.assertEqual(ds.PatientBirthDate, replacement_data.tags_to_fill["PatientBirthDate"])
 
     def test_several_missing_tags(self):
         """Input dataset does not contain required tags. All tags shall be filled and adjusted."""
-        ds = self.load_dataset(
-            DICOM_DATASET_JSON, tags_to_remove=["00080090", "00080012"]
-        )
+        ds = self.load_dataset(DICOM_DATASET_JSON, tags_to_remove=["00080090", "00080012"])
 
-        replacement_data = fill_dcm.update_data(
-            parse_argument.InputTags(
-                {"InstanceCreationDate": None, "ReferringPhysicianName": None}, {}
-            )
-        )
+        replacement_data = fill_dcm.update_data(parse_argument.InputTags({"InstanceCreationDate": None, "ReferringPhysicianName": None}, {}))
         fill_dcm.adjust_dicom_dataset(ds, replacement_data)
 
         self.assertEqual(
@@ -113,11 +95,7 @@ class TestAdjustDICOMDataset(unittest.TestCase):
         self.assertEqual(ds["InstanceCreationDate"].VM, 0)
         self.assertEqual(ds["ReferringPhysicianName"].VM, 0)
 
-        replacement_data = fill_dcm.update_data(
-            parse_argument.InputTags(
-                {"InstanceCreationDate": None, "ReferringPhysicianName": None}, {}
-            )
-        )
+        replacement_data = fill_dcm.update_data(parse_argument.InputTags({"InstanceCreationDate": None, "ReferringPhysicianName": None}, {}))
         fill_dcm.adjust_dicom_dataset(ds, replacement_data)
 
         self.assertEqual(
@@ -131,9 +109,7 @@ class TestAdjustDICOMDataset(unittest.TestCase):
 
     def test_several_missing_tags_with_replacement_value(self):
         """Input dataset does not contain required tags. All tags shall be filled and adjusted with replacement value."""
-        ds = self.load_dataset(
-            DICOM_DATASET_JSON, tags_to_remove=["00080090", "00080012"]
-        )
+        ds = self.load_dataset(DICOM_DATASET_JSON, tags_to_remove=["00080090", "00080012"])
 
         replacement_data = fill_dcm.update_data(
             parse_argument.InputTags(
@@ -157,9 +133,7 @@ class TestAdjustDICOMDataset(unittest.TestCase):
 
     def test_several_missing_tags_with_values_to_replace(self):
         """Input dataset does not contain required tags. All tags shall be filled and adjusted with replacement value."""
-        ds = self.load_dataset(
-            DICOM_DATASET_JSON, tags_to_remove=["00080090", "00080012"]
-        )
+        ds = self.load_dataset(DICOM_DATASET_JSON, tags_to_remove=["00080090", "00080012"])
 
         replacement_data = fill_dcm.update_data(
             parse_argument.InputTags(
