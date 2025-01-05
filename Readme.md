@@ -6,6 +6,8 @@ FillDCM is the DICOM tool you need if you have to:
 
 Tags are specified by their names as string, following DICOM dictionary: PatientID, AcquisitionData, etc.
 
+# How to use
+
 ```bash
 python filldcm --help
 usage: FillDCM [-h] [-f --fill-tag] [-r --replace-tag] [-j --json] [-ov] dcm_file [dcm_file ...]
@@ -22,28 +24,9 @@ options:
   -j --json             Specify a JSON file as input. This JSON file has a list of tags to fill or to replace. The expected structure for the JSON is: {"tags_to_fill":{}, "tags_to_replace":{}} with both attribute being dict of tags with value (or null)
   -ov, --overwrite-file Overwrite the original file. By default "_generated" is appended the the original filename and a new file is created.
 ```
+## Examples
 
-# How to use it
-FillDCM relies on Poetry.
-
-To install dependencies:
-```bash
-poetry install
-```
-
-To run FillDCM:
-```bash
-poetry run python filldcm.py ...
-```
-
-To run unit tests:
-```bash
-poetry run python -m unittest
-```
-
-# Examples
-
-## Fill a list of empty/missing tags
+### Fill a list of empty/missing tags
 
 You want patient's data to not be empty or missing and don't expect a particular value:
 ```bash
@@ -56,7 +39,7 @@ python filldcm.py
     <list of dcm files>
 ```
 
-## Overwrite some particular tags
+### Overwrite some particular tags
 
 You want to overwrite all tags related to the Institution
 ```bash
@@ -66,7 +49,7 @@ python filldcm.py
     <list of dcm files>
 ```
 
-## Use a JSON file
+### Use a JSON file
 
 You can use a JSON file and pass it to fillDCM instead of defining tags one by one in the command line.
 ```json
@@ -89,3 +72,31 @@ python filldcm.py
     --json ./tags.json 
     <list of dcm files>
 ```
+
+
+# Development
+FillDCM relies on Poetry to manage its dependencies.
+
+To install dependencies:
+```bash
+poetry install
+```
+
+To run FillDCM:
+```bash
+poetry run python filldcm.py <add parameters>
+```
+
+To run unit tests:
+```bash
+poetry run python -m unittest
+```
+
+## Build portable executable
+FillDCM uses pyinstaller to build an executable. This is useful to share the application, especially to non-developer.
+To compile FillDCM executable, follow these steps:
+```bash
+poetry install --with=installer
+poetry run pyinstall filldcm.py --onefile
+```
+The executable is generated in dist/ folder.

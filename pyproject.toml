@@ -6,13 +6,17 @@ authors = ["Sylvain Jeanne <jeanne.sylvain.dev@gmail.com>"]
 readme = "Readme.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.10,<3.14"
 pydicom = "^2.4.4"
 
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.10.0"
 isort = "^5.13.2"
+
+[tool.poetry.group.installer.dependencies]
+pyinstaller = "^6.11.1"
+
 
 [tool.isort]
 profile = "black"
