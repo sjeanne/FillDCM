@@ -6,7 +6,7 @@ from json import loads
 
 from pydicom import Dataset
 
-from filldcm import fill_dcm, parse_argument
+from fill_dcm import fill_dcm, parse_argument
 
 
 class TestAdjustDICOMDataset(unittest.TestCase):

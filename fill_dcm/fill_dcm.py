@@ -9,7 +9,7 @@ from typing import Dict, List, Tuple
 
 from pydicom import datadict, dcmread, errors
 
-from filldcm import parse_argument, vr_generators
+from fill_dcm import parse_argument, vr_generators
 
 logger = logging.getLogger()
 

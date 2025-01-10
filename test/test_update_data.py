@@ -4,7 +4,7 @@
 import unittest
 from copy import deepcopy
 
-from filldcm import fill_dcm, parse_argument
+from fill_dcm import fill_dcm, parse_argument
 
 
 class TestDataUpdate(unittest.TestCase):

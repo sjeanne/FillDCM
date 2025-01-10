@@ -4,7 +4,7 @@
 import string
 import unittest
 
-from filldcm import fill_dcm
+from fill_dcm import fill_dcm
 
 
 class TestVRGenerators(unittest.TestCase):

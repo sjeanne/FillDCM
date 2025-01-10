@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock, mock_open, patch
 
-from filldcm import parse_argument
+from fill_dcm import parse_argument
 
 
 class TestParseArgument(unittest.TestCase):
