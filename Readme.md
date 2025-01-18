@@ -91,6 +91,10 @@ To run unit tests:
 ```bash
 poetry run python -m unittest
 ```
+or with PoeThePoet
+```bash
+poetry poe test
+```
 
 ## Setup style tools
 Black and isort are used to format the code. To enforce their usage, pre-commit is used as well. The latter shall be run once to install its git's hook:
@@ -107,4 +111,10 @@ To compile FillDCM executable, follow these steps:
 poetry install --with=installer
 poetry run pyinstall filldcm.py --onefile
 ```
+or with PoeThePoet
+```bash
+poetry poe installer
+```
+
+
 The executable is generated in dist/ folder.

@@ -7,16 +7,20 @@ readme = "Readme.md"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.14"
-pydicom = "^2.4.4"
-
+pydicom = "3.0.*"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.10.0"
 isort = "^5.13.2"
 pre-commit = "^4.0.1"
+poethepoet = "^0.32.1"
 
 [tool.poetry.group.installer.dependencies]
 pyinstaller = "^6.11.1"
+
+[tool.poe.tasks]
+test = "python -m unittest"
+installer = "python -m pyinstall filldcm.py --onefile"
 
 [tool.black]
 line-length = 150
