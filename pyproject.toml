@@ -20,7 +20,7 @@ pyinstaller = "^6.11.1"
 
 [tool.poe.tasks]
 test = "python -m unittest"
-installer = "python -m pyinstall filldcm.py --onefile"
+installer = "pyinstaller filldcm.py --onefile"
 
 [tool.black]
 line-length = 150

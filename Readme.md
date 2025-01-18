@@ -109,7 +109,7 @@ FillDCM uses pyinstaller to build an executable. This is useful to share the app
 To compile FillDCM executable, follow these steps:
 ```bash
 poetry install --with=installer
-poetry run pyinstall filldcm.py --onefile
+poetry run pyinstaller filldcm.py --onefile
 ```
 or with PoeThePoet
 ```bash
